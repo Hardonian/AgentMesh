@@ -1,0 +1,25 @@
+# Multi-stage Build for AgentMesh Control Plane Controller
+FROM golang:1.26-alpine AS builder
+
+WORKDIR /app
+RUN apk add --no-cache git ca-certificates
+
+COPY go.mod go.sum ./
+RUN go mod download
+
+COPY . .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-w -s" -o /agentmesh-controller ./cmd/agentmesh-controller
+
+# Minimal non-root runtime container
+FROM alpine:3.20
+
+RUN apk --no-cache add ca-certificates tzdata && \
+    addgroup -S agentmesh && adduser -S agentmesh -G agentmesh
+
+USER agentmesh
+WORKDIR /home/agentmesh
+
+COPY --from=builder /agentmesh-controller /usr/local/bin/agentmesh-controller
+
+EXPOSE 8080
+ENTRYPOINT ["/usr/local/bin/agentmesh-controller"]

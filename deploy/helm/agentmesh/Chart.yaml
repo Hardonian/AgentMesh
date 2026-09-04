@@ -1,0 +1,17 @@
+apiVersion: v2
+name: agentmesh
+description: Production Helm chart for AgentMesh A2A + MCP Control and Data Plane
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - agentmesh
+  - ai-agents
+  - a2a
+  - mcp
+  - google-adk
+  - control-plane
+home: https://github.com/agentmesh/agentmesh
+maintainers:
+  - name: AgentMesh Core Team
+    email: maintainers@agentmesh.dev

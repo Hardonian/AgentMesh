@@ -1,0 +1,44 @@
+controller:
+  replicaCount: 2
+  image:
+    repository: ghcr.io/agentmesh/agentmesh-controller
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 8080
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  env:
+    environment: "production"
+    logLevel: "info"
+
+proxy:
+  mode: "DaemonSet" # or "Sidecar"
+  image:
+    repository: ghcr.io/agentmesh/agentmesh-proxy
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+    port: 9090
+  resources:
+    limits:
+      cpu: 250m
+      memory: 256Mi
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+database:
+  enabled: true
+  url: "postgres://agentmesh:password@agentmesh-postgresql:5432/agentmesh?sslmode=disable"
+
+telemetry:
+  enabled: true
+  openTelemetryCollectorEndpoint: "otel-collector.monitoring:4317"

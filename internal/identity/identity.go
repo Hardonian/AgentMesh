@@ -48,7 +48,7 @@ func GenerateAPIKey(tenantID, subjectID string, scopes []string, ttl time.Durati
 	now := time.Now().UTC()
 
 	var expiresAt *time.Time
-	if ttl > 0 {
+	if ttl != 0 {
 		exp := now.Add(ttl)
 		expiresAt = &exp
 	}

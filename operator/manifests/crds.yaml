@@ -1,0 +1,92 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: agentmeshagents.agentmesh.dev
+spec:
+  group: agentmesh.dev
+  names:
+    kind: AgentMeshAgent
+    listKind: AgentMeshAgentList
+    plural: agentmeshagents
+    singular: agentmeshagent
+    shortNames:
+      - amag
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                name:
+                  type: string
+                endpointUrl:
+                  type: string
+                replicas:
+                  type: integer
+                contract:
+                  type: object
+                  x-kubernetes-preserve-unknown-fields: true
+            status:
+              type: object
+              properties:
+                phase:
+                  type: string
+                contractHash:
+                  type: string
+                registeredInControlPlane:
+                  type: boolean
+---
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: agentmeshpolicies.agentmesh.dev
+spec:
+  group: agentmesh.dev
+  names:
+    kind: AgentMeshPolicy
+    listKind: AgentMeshPolicyList
+    plural: agentmeshpolicies
+    singular: agentmeshpolicy
+    shortNames:
+      - ampol
+  scope: Namespaced
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                tenantId:
+                  type: string
+                rules:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      effect:
+                        type: string
+                      agents:
+                        type: array
+                        items:
+                          type: string
+                      tools:
+                        type: array
+                        items:
+                          type: string
+                      actions:
+                        type: array
+                        items:
+                          type: string

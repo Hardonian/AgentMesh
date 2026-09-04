@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: agentmesh-postgres
+    environment:
+      POSTGRES_USER: agentmesh
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: agentmesh
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./migrations/000001_init.up.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U agentmesh"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  controller:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.controller
+    container_name: agentmesh-controller
+    ports:
+      - "8080:8080"
+    environment:
+      AGENTMESH_ENV: development
+      AGENTMESH_HTTP_PORT: 8080
+      DATABASE_URL: postgres://agentmesh:password@postgres:5432/agentmesh?sslmode=disable
+      AGENTMESH_LOG_LEVEL: info
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  proxy:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.proxy
+    container_name: agentmesh-proxy
+    ports:
+      - "9090:9090"
+    environment:
+      AGENTMESH_PROXY_PORT: 9090
+      AGENTMESH_CONTROL_PLANE_URL: http://controller:8080
+    depends_on:
+      - controller
+
+volumes:
+  pgdata:
