@@ -1,6 +1,7 @@
 package policy
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -61,7 +62,7 @@ func AnalyzeGraphPolicy(g *graph.AgentGraph, p *Policy) *GraphPolicyReport {
 			Tool:           tool,
 			Action:         "execute",
 		}
-		dec := engine.Evaluate(nil, req)
+		dec := engine.Evaluate(context.TODO(), req)
 		if dec.Effect == EffectDeny {
 			report.Compliant = false
 			report.Findings = append(report.Findings, GraphPolicyFinding{
@@ -83,7 +84,7 @@ func AnalyzeGraphPolicy(g *graph.AgentGraph, p *Policy) *GraphPolicyReport {
 			Action:         "delegate",
 			Resource:       delegate,
 		}
-		delDec := engine.Evaluate(nil, delReq)
+		delDec := engine.Evaluate(context.TODO(), delReq)
 		if delDec.Effect == EffectDeny {
 			report.Compliant = false
 			report.Findings = append(report.Findings, GraphPolicyFinding{
@@ -120,7 +121,7 @@ func AnalyzeGraphPolicy(g *graph.AgentGraph, p *Policy) *GraphPolicyReport {
 				Tool:           node.Target,
 				Action:         "execute",
 			}
-			dec := engine.Evaluate(nil, req)
+			dec := engine.Evaluate(context.TODO(), req)
 			if dec.Effect == EffectRequireApproval {
 				// Check if there is an approval checkpoint in graph
 				hasApproval := false

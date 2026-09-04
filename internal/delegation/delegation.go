@@ -1,6 +1,7 @@
 package delegation
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strings"
@@ -113,7 +114,7 @@ func (c *Chain) Depth() int {
 func (c *Chain) CheckPrivilegeEscalation(engine *policy.Engine, tenantID, tool, action string) error {
 	// Check policy against the origin agent first, then all intermediaries
 	for depth, agentID := range c.Stack {
-		dec := engine.Evaluate(nil, &policy.EvaluationRequest{
+		dec := engine.Evaluate(context.TODO(), &policy.EvaluationRequest{
 			TenantID:        tenantID,
 			SubjectAgentID:  agentID,
 			Tool:            tool,
