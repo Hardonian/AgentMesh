@@ -11,9 +11,10 @@
 The AgentMesh team takes security seriously. If you discover a security vulnerability within AgentMesh (including policy bypasses, delegation escalation, credential leakage, or SSRF risks), please **do not open a public GitHub issue**.
 
 Instead, please send a detailed report to:
-**security@agentmesh.dev**
+**<security@agentmesh.dev>**
 
 Include:
+
 1. Description of the vulnerability
 2. Steps to reproduce or proof-of-concept exploit
 3. Affected components (Proxy, Controller, Policy Engine, A2A, MCP)

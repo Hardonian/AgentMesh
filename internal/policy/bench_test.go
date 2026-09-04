@@ -28,7 +28,7 @@ func BenchmarkPolicyEvaluation(b *testing.B) {
 	ctx := context.Background()
 
 	b.ResetTimer()
-	for i := 0; i < b.N; i++ {
+	for b.Loop() {
 		_ = engine.Evaluate(ctx, req)
 	}
 }

@@ -1,9 +1,10 @@
 # Human-in-the-Loop (HITL) Approvals
 
 ## Mechanism
+
 When a policy decision produces `REQUIRE_APPROVAL`, the data plane intercepts the tool call, generates an approval request, and blocks execution:
 
-```
+```text
 Agent Attempts Tool Call
          │
          ▼
@@ -23,7 +24,9 @@ Agent Resumes Tool Call with Approval Token ──► Proxy Verifies & Passes Ca
 ```
 
 ## Immutable Parameter Binding
+
 Approval tokens bind to:
+
 - Exact requesting Agent ID
 - Exact targeted Tool Name
 - **SHA-256 Hash of Action Parameters**

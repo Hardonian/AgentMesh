@@ -1,9 +1,11 @@
 # AgentBOM: Software Bill of Materials for AI Agents
 
 ## Overview
+
 `AgentBOM` provides an enterprise-grade Software Bill of Materials for autonomous AI agents, cataloging their runtime dependencies, foundation models, MCP tools, delegation topologies, and data classifications.
 
 ## Structure
+
 - **Metadata**: Agent name, semantic version, organization, timestamp.
 - **Agent Identity**: Runtime (`go`, `python`), framework (`google-adk`, `langgraph`, `custom`).
 - **Models**: Foundation model dependencies, providers (`google-vertex`, `gemini`, `anthropic`), context window sizes, purpose.
@@ -14,6 +16,7 @@
 - **Permissions**: Required scopes and approval requirements.
 
 ## CLI Usage
+
 ```bash
 # Generate AgentBOM from an AgentContract
 agentmesh bom generate agent.contract.yaml > agent.bom.json

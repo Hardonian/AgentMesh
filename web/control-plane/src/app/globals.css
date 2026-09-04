@@ -19,6 +19,7 @@ body {
 
 .glass-panel {
   background: var(--card-bg);
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   border-radius: 0.75rem;
@@ -27,5 +28,6 @@ body {
 .gradient-text {
   background: linear-gradient(135deg, #34d399 0%, #3b82f6 50%, #8b5cf6 100%);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }

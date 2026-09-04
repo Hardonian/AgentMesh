@@ -1,6 +1,7 @@
 # AgentContract Specification
 
 ## Overview
+
 `AgentContract` is AgentMesh's foundational primitive defining an agent's identity, allowed capabilities, tool boundaries, delegation limits, budgets, and SLOs.
 
 ## Specification Schema
@@ -49,4 +50,5 @@ approval:
 ```
 
 ## Deterministic Hashing
+
 Contracts are canonicalized and hashed via SHA-256 (`contract.Hash()`). Any modification to an agent's contract changes its hash, requiring re-registration and triggering regression evaluations.
