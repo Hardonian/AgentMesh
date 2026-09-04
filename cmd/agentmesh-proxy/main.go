@@ -25,6 +25,10 @@ import (
 )
 
 func buildProxyRouter(cfg *config.AppConfig) (http.Handler, *config.ProxyConfigCache, error) {
+	if cfg == nil {
+		return nil, nil, fmt.Errorf("config cannot be nil")
+	}
+
 	// Core data plane components
 	polEngine := policy.NewEngine([]*policy.Policy{})
 	keyRing := crypto.NewKeyRing()
@@ -63,6 +67,7 @@ func buildProxyRouter(cfg *config.AppConfig) (http.Handler, *config.ProxyConfigC
 		w.Header().Set("Content-Type", "application/json")
 		_ = json.NewEncoder(w).Encode(map[string]any{
 			"status":        "healthy",
+			"environment":   cfg.Environment,
 			"configVersion": version,
 			"configAgeSec":  age.Seconds(),
 			"hasConfig":     hasConfig,
