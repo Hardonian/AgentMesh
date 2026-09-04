@@ -72,13 +72,13 @@ func TestProxyConfigCache_LKGAndDowngradeProtection(t *testing.T) {
 	}
 
 	// 5. Expiration: let bundle expire -> CachedPolicy fails closed (returns nil)
-	expBundle, _ := crypto.SignPayload(kp, "v3", 5*time.Millisecond, map[string]string{"rule": "temp"})
 	time.Sleep(10 * time.Millisecond) // Ensure issuedAt is after b2
+	expBundle, _ := crypto.SignPayload(kp, "v3", 50*time.Millisecond, map[string]string{"rule": "temp"})
 	expPol := &policy.Policy{ID: "pol_exp", Version: "3.0"}
 	if err := cache.UpdateFromBundle(expBundle, expPol); err != nil {
 		t.Fatalf("failed to update temp bundle: %v", err)
 	}
-	time.Sleep(10 * time.Millisecond) // Wait for expiry
+	time.Sleep(70 * time.Millisecond) // Wait for 50ms TTL to expire
 	if cache.CachedPolicy() != nil {
 		t.Errorf("expected nil (fail closed) for expired cached policy, got %v", cache.CachedPolicy())
 	}

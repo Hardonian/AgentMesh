@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -13,16 +14,47 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-// ScrubSecrets redacts sensitive keys and bearer tokens from any text or logs.
+var (
+	reBearer        = regexp.MustCompile(`(?i)bearer\s+[a-z0-9_\-\.]+`)
+	reGoogleAIKey   = regexp.MustCompile(`AIza[0-9A-Za-z\-_]{30,50}`)
+	reOpenAIKey     = regexp.MustCompile(`sk-[a-zA-Z0-9]{20,}`)
+	reMeshKey       = regexp.MustCompile(`mesh_[a-f0-9]{32,64}`)
+	reAuthHeader    = regexp.MustCompile(`(?i)authorization:\s*[^\r\n]+`)
+	rePassword      = regexp.MustCompile(`(?i)password[:=]\s*[^\s,"']+`)
+	reStripeKey     = regexp.MustCompile(`(?:sk|rk|pk)_(?:live|test)_[0-9a-zA-Z]{20,}`)
+	reHuggingFace   = regexp.MustCompile(`hf_[a-zA-Z0-9]{34,}`)
+	reGitHubToken   = regexp.MustCompile(`gh[pousr]_[a-zA-Z0-9]{36,}`)
+	reDBConnection  = regexp.MustCompile(`(?i)(?:postgres|postgresql|mysql|mongodb)://[^:]+:[^@]+@[^\s/]+`)
+	reCookieHeader  = regexp.MustCompile(`(?i)(?:set-)?cookie:\s*[^\r\n]+`)
+	reGCPPrivateKey = regexp.MustCompile(`"private_key":\s*"-----BEGIN[^\"]+"`)
+	reAWSKey        = regexp.MustCompile(`AKIA[0-9A-Z]{16}`)
+)
+
+// ScrubSecrets redacts sensitive credentials, tokens, cookies, database URLs, and keys from any text or logs.
 func ScrubSecrets(input string) string {
 	cleaned := input
-	cleaned = regexp.MustCompile(`(?i)bearer\s+[a-z0-9_\-\.]+`).ReplaceAllString(cleaned, "Bearer [REDACTED_SECRET]")
-	cleaned = regexp.MustCompile(`AIza[0-9A-Za-z\-_]{30,50}`).ReplaceAllString(cleaned, "[REDACTED_SECRET]")
-	cleaned = regexp.MustCompile(`sk-[a-zA-Z0-9]{20,}`).ReplaceAllString(cleaned, "[REDACTED_SECRET]")
-	cleaned = regexp.MustCompile(`mesh_[a-f0-9]{32,64}`).ReplaceAllString(cleaned, "[REDACTED_SECRET]")
-	cleaned = regexp.MustCompile(`(?i)authorization:\s*[^\r\n]+`).ReplaceAllString(cleaned, "Authorization: [REDACTED_SECRET]")
-	cleaned = regexp.MustCompile(`(?i)password[:=]\s*[^\s,"']+`).ReplaceAllString(cleaned, "password: [REDACTED_SECRET]")
+	cleaned = reBearer.ReplaceAllString(cleaned, "Bearer [REDACTED_SECRET]")
+	cleaned = reGoogleAIKey.ReplaceAllString(cleaned, "[REDACTED_SECRET]")
+	cleaned = reOpenAIKey.ReplaceAllString(cleaned, "[REDACTED_SECRET]")
+	cleaned = reMeshKey.ReplaceAllString(cleaned, "[REDACTED_SECRET]")
+	cleaned = reAuthHeader.ReplaceAllString(cleaned, "Authorization: [REDACTED_SECRET]")
+	cleaned = rePassword.ReplaceAllString(cleaned, "password: [REDACTED_SECRET]")
+	cleaned = reStripeKey.ReplaceAllString(cleaned, "[REDACTED_STRIPE_KEY]")
+	cleaned = reHuggingFace.ReplaceAllString(cleaned, "[REDACTED_HF_TOKEN]")
+	cleaned = reGitHubToken.ReplaceAllString(cleaned, "[REDACTED_GITHUB_TOKEN]")
+	cleaned = reDBConnection.ReplaceAllString(cleaned, "[REDACTED_DB_URL]")
+	cleaned = reCookieHeader.ReplaceAllString(cleaned, "Cookie: [REDACTED_COOKIE]")
+	cleaned = reGCPPrivateKey.ReplaceAllString(cleaned, `"private_key": "[REDACTED_PRIVATE_KEY]"`)
+	cleaned = reAWSKey.ReplaceAllString(cleaned, "[REDACTED_AWS_KEY]")
 	return cleaned
+}
+
+// SanitizeLogMessage neutralizes newline and carriage return characters to prevent log injection/spoofing attacks.
+func SanitizeLogMessage(msg string) string {
+	msg = ScrubSecrets(msg)
+	msg = strings.ReplaceAll(msg, "\r", "\\r")
+	msg = strings.ReplaceAll(msg, "\n", "\\n")
+	return msg
 }
 
 // SpanType denotes the layer of execution in an Agent Trace.
