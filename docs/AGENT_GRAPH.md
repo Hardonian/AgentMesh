@@ -28,6 +28,7 @@ type AgentGraph struct {
 ```
 
 ### Node Types
+
 - `AGENT`: Direct invocation of another registered agent.
 - `WORKFLOW_STEP`: Local logical execution step, router, or branch point.
 - `TOOL`: Outbound tool invocation over MCP or direct API.
@@ -37,6 +38,7 @@ type AgentGraph struct {
 ---
 
 ## Invariants & Validation Rules
+
 1. **Single Entrypoint**: Every graph must declare exactly one valid `Entrypoint` referencing an existing node.
 2. **Referential Integrity**: All edge `FromID` and `ToID` values must resolve to defined nodes within the same graph.
 3. **Deterministic Canonical Hashing**: Nodes, edges, tools, and delegations are canonicalized and sorted deterministically before computing the SHA-256 digest (`Graph.Hash()`). Timestamp is zeroed during hashing to guarantee identical digests for identical topologies.
@@ -45,7 +47,9 @@ type AgentGraph struct {
 ---
 
 ## Graph Diffing
+
 `graph.DiffGraphs(g1, g2)` produces a structured `GraphDiff` detailing:
+
 - Added/Removed nodes
 - Added/Removed tools
 - Added/Removed delegations

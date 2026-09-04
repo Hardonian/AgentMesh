@@ -74,8 +74,17 @@ type ApprovalConfig struct {
 	TimeoutSeconds int      `json:"timeoutSeconds,omitempty" yaml:"timeout_seconds,omitempty"`
 }
 
+// MaxContractPayloadBytes defines the maximum permitted contract file size (10 MB).
+const MaxContractPayloadBytes = 10 * 1024 * 1024
+
+// ErrContractTooLarge is returned when a contract exceeds 10MB.
+var ErrContractTooLarge = errors.New("contract payload exceeds maximum limit of 10MB")
+
 // ParseYAML decodes and validates an AgentContract from YAML format.
 func ParseYAML(data []byte) (*AgentContract, error) {
+	if len(data) > MaxContractPayloadBytes {
+		return nil, fmt.Errorf("%w: received %d bytes", ErrContractTooLarge, len(data))
+	}
 	var c AgentContract
 	if err := yaml.Unmarshal(data, &c); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal YAML contract: %w", err)
@@ -88,6 +97,9 @@ func ParseYAML(data []byte) (*AgentContract, error) {
 
 // ParseJSON decodes and validates an AgentContract from JSON format.
 func ParseJSON(data []byte) (*AgentContract, error) {
+	if len(data) > MaxContractPayloadBytes {
+		return nil, fmt.Errorf("%w: received %d bytes", ErrContractTooLarge, len(data))
+	}
 	var c AgentContract
 	if err := json.Unmarshal(data, &c); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON contract: %w", err)

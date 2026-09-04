@@ -129,14 +129,32 @@ func (s *Server) setupRoutes() {
 	r.Use(middleware.RequestID)
 	r.Use(middleware.RealIP)
 	r.Use(middleware.Recoverer)
+
+	// Security Headers & Payload Limit
+	r.Use(func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("X-Content-Type-Options", "nosniff")
+			w.Header().Set("X-Frame-Options", "DENY")
+			w.Header().Set("X-XSS-Protection", "1; mode=block")
+			w.Header().Set("Content-Security-Policy", "default-src 'self'")
+			w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+			if r.Body != nil {
+				r.Body = http.MaxBytesReader(w, r.Body, 10<<20) // 10MB limit
+			}
+			next.ServeHTTP(w, r)
+		})
+	})
+
 	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"*"},
+		AllowedOrigins:   []string{"http://localhost:3000", "http://localhost:8080", "http://127.0.0.1:3000", "http://127.0.0.1:8080"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-Tenant-ID"},
+		AllowedHeaders:   []string{"Accept", "Authorization", "Content-Type", "X-Tenant-ID", "X-API-Key"},
 		ExposedHeaders:   []string{"Link"},
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
+
+	r.Use(AuthMiddleware(s.store, false))
 
 	// Health & Metrics
 	r.Get("/healthz", func(w http.ResponseWriter, r *http.Request) {
@@ -273,6 +291,9 @@ func (s *Server) setupRoutes() {
 }
 
 func getTenantID(r *http.Request) string {
+	if val, ok := r.Context().Value(TenantContextKey).(string); ok && val != "" {
+		return val
+	}
 	tenant := r.Header.Get("X-Tenant-ID")
 	if tenant == "" {
 		return "default"
@@ -989,6 +1010,10 @@ func (s *Server) handleTestA2AEndpoint(w http.ResponseWriter, r *http.Request) {
 	}
 	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 		errorResponse(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	if _, err := ValidateSafeRemoteURL(body.EndpointURL, false); err != nil {
+		errorResponse(w, http.StatusBadRequest, fmt.Sprintf("invalid endpoint URL (SSRF protection): %v", err))
 		return
 	}
 	lab := a2a.NewCompatibilityLab()

@@ -25,6 +25,7 @@ The **Tool Passport** (`internal/mcp/types.go`) tracks empirical reliability, la
 ---
 
 ## Key Fields & Lifecycle
+
 - **`riskClass`**: Governs whether invocations require administrative pre-approval, MFA, or read-only confinement.
 - **`schemaFingerprint`**: SHA-256 digest of normalized input schema. Any change invalidates cached agent tool bindings.
 - **`healthStatus`**: `HEALTHY`, `DEGRADED`, or `UNHEALTHY` driven by circuit breaker probes.

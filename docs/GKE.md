@@ -6,7 +6,7 @@ AgentMesh provides native Kubernetes integration on GKE using custom resources a
 
 ## GKE Architecture
 
-```
+```text
 GKE Cluster: agent-mesh-prod
   ├── Namespace: agentmesh-system
   │     ├── Deployment: agentmesh-controller
@@ -25,6 +25,7 @@ GKE Cluster: agent-mesh-prod
 ## GKE Workload Identity Setup
 
 1. **Create GCP Service Account and Bind to K8s Service Account**:
+
    ```bash
    gcloud iam service-accounts create agentmesh-gke-sa --project=${PROJECT_ID}
 
@@ -34,6 +35,7 @@ GKE Cluster: agent-mesh-prod
    ```
 
 2. **Annotate Kubernetes Service Account**:
+
    ```yaml
    apiVersion: v1
    kind: ServiceAccount

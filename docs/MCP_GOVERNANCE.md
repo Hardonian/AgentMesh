@@ -5,7 +5,9 @@ AgentMesh functions as an enterprise security gateway for the **Model Context Pr
 ---
 
 ## Tool Risk Classification
+
 Tools are categorized into canonical risk classes (`ToolRiskClass`):
+
 - `READ`: Safe, read-only data extraction (e.g. `bigquery.read`, `web.search`).
 - `WRITE`: Data modification or external side effects (e.g. `gmail.send`, `database.update`).
 - `DESTRUCTIVE`: Resource termination or data deletion (e.g. `gke.cluster.delete`, `s3.bucket.drop`).
@@ -13,6 +15,7 @@ Tools are categorized into canonical risk classes (`ToolRiskClass`):
 - `INFRASTRUCTURE`: Cloud resource provisioning or configuration changes.
 
 Classification sources:
+
 - `DECLARED`: Stated in server metadata.
 - `PROVIDER_METADATA`: Extracted from trusted provider descriptors.
 - `ADMIN_ASSIGNED`: Explicitly designated by enterprise security operators.
@@ -21,14 +24,18 @@ Classification sources:
 ---
 
 ## Tool Fingerprinting & Schema Drift
+
 Every tool version receives a deterministic SHA-256 fingerprint computed across:
+
 - Server identity & Tool Name
 - Version & Provider
 - Risk Class
 - Normalized Input & Output JSON Schemas
 
 ### Conservative Drift Detection
+
 When a tool schema updates, AgentMesh compares old vs new fingerprints:
+
 - `UNCHANGED`: Fingerprints match exactly.
 - `COMPATIBLE_CHANGE`: Optional properties added; no fields removed.
 - `POTENTIALLY_BREAKING`: Existing property removed or modified.

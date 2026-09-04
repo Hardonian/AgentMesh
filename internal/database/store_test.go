@@ -160,3 +160,84 @@ func TestMemoryStorePhase4Entities(t *testing.T) {
 	}
 }
 
+func TestStore_FailClosedTenantIsolation(t *testing.T) {
+	store := NewMemoryStore()
+	ctx := context.Background()
+
+	// Populate tenant-a and tenant-b
+	_ = store.SaveAgent(ctx, &AgentRecord{ID: "agent-1", TenantID: "tenant-a", Name: "Agent A"})
+	_ = store.SaveAgent(ctx, &AgentRecord{ID: "agent-2", TenantID: "tenant-b", Name: "Agent B"})
+
+	// Empty tenant MUST fail closed
+	_, err := store.ListAgents(ctx, "")
+	if err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant when listing agents with empty tenant, got: %v", err)
+	}
+
+	// Listing tenant-a returns only tenant-a agents
+	listA, err := store.ListAgents(ctx, "tenant-a")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(listA) != 1 || listA[0].ID != "agent-1" {
+		t.Fatalf("expected 1 agent for tenant-a, got %d", len(listA))
+	}
+
+	// Listing tenant-b returns only tenant-b agents
+	listB, err := store.ListAgents(ctx, "tenant-b")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if len(listB) != 1 || listB[0].ID != "agent-2" {
+		t.Fatalf("expected 1 agent for tenant-b, got %d", len(listB))
+	}
+
+	// Verify other List functions reject empty tenant
+	if _, err := store.ListPolicies(ctx, ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListPolicies, got %v", err)
+	}
+	if _, err := store.ListCredentials(ctx, ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListCredentials, got %v", err)
+	}
+	if _, err := store.ListTools(ctx, ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListTools, got %v", err)
+	}
+	if _, err := store.ListGraphs(ctx, ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListGraphs, got %v", err)
+	}
+	if _, err := store.ListToolPassports(ctx, ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListToolPassports, got %v", err)
+	}
+	if _, err := store.ListA2AProfiles(ctx, ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListA2AProfiles, got %v", err)
+	}
+	if _, err := store.ListRouteOutcomes(ctx, ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListRouteOutcomes, got %v", err)
+	}
+	if _, err := store.ListEvaluationSuites(ctx, ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListEvaluationSuites, got %v", err)
+	}
+	if _, err := store.ListRoutingOutcomesV3(ctx, "", ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListRoutingOutcomesV3, got %v", err)
+	}
+	if _, err := store.ListAgentSLOs(ctx, ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListAgentSLOs, got %v", err)
+	}
+	if _, err := store.ListProxyInstances(ctx, ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListProxyInstances, got %v", err)
+	}
+	if _, err := store.ListRoutingModels(ctx, ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListRoutingModels, got %v", err)
+	}
+	if _, err := store.ListOptimizationActions(ctx, ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListOptimizationActions, got %v", err)
+	}
+	if _, err := store.ListRoutingSpecs(ctx, ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListRoutingSpecs, got %v", err)
+	}
+	if _, err := store.ListProductionOutcomes(ctx, "", ""); err != ErrEmptyTenant {
+		t.Fatalf("expected ErrEmptyTenant for ListProductionOutcomes, got %v", err)
+	}
+}
+
+

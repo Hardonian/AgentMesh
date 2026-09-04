@@ -67,3 +67,36 @@ func TestAgentPassportV3AndRouterPassport(t *testing.T) {
 		t.Errorf("unexpected RouterPassport data: %+v", rp)
 	}
 }
+
+func TestSanitizeForPublic(t *testing.T) {
+	p := &AgentPassport{
+		IsPublic: true,
+		Identity: PassportIdentity{
+			AgentID:      "agent-private",
+			Organization: "secret-tenant-alpha",
+		},
+		Graph: GraphSummary{
+			Tools:          []string{"db.write", "secret.decrypt"},
+			Delegates:      []string{"admin-agent"},
+			ApprovalPoints: []string{"hitl-1"},
+		},
+		Economics: EconomicMetrics{
+			AverageCostUSD: 0.05,
+			DailyCostUSD:   1000.0,
+		},
+	}
+
+	sanitized := p.SanitizeForPublic()
+	if sanitized == nil {
+		t.Fatal("expected sanitized passport, got nil")
+	}
+	if sanitized.Identity.Organization != "[REDACTED_ORGANIZATION]" {
+		t.Errorf("expected organization to be redacted, got: %s", sanitized.Identity.Organization)
+	}
+	if sanitized.Economics.AverageCostUSD != 0 || sanitized.Economics.DailyCostUSD != 0 {
+		t.Errorf("expected economics to be zeroed, got: %+v", sanitized.Economics)
+	}
+	if sanitized.Graph.Tools[0] != "2 governed tools" {
+		t.Errorf("expected count summary for tools, got: %v", sanitized.Graph.Tools)
+	}
+}

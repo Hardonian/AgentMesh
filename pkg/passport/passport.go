@@ -275,9 +275,22 @@ func (p *AgentPassport) SanitizeForPublic() *AgentPassport {
 		return nil
 	}
 	clone := *p
-	// Redact private operational details
+	// 1. Redact organization / internal tenant ID
+	clone.Identity.Organization = "[REDACTED_ORGANIZATION]"
+
+	// 2. Redact private tools and delegates
 	clone.Graph.Tools = []string{fmt.Sprintf("%d governed tools", len(p.Graph.Tools))}
 	clone.Graph.Delegates = []string{fmt.Sprintf("%d authorized peer agents", len(p.Graph.Delegates))}
+	clone.Graph.ApprovalPoints = []string{fmt.Sprintf("%d human approval gates", len(p.Graph.ApprovalPoints))}
+
+	// 3. Redact private internal cost contract
+	clone.Economics = EconomicMetrics{
+		AverageCostUSD:  0,
+		TokensPerTask:   0,
+		DailyCostUSD:    0,
+		MaxObservedCost: 0,
+	}
+
 	return &clone
 }
 

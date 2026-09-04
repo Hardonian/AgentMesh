@@ -34,12 +34,15 @@ canary:
 ---
 
 ## CI Execution Gate
+
 Whenever prompts, model targets, tools, or graph topologies are updated, CI runs:
+
 ```bash
 agentmesh eval run ./evals/finance_suite.yaml
 ```
 
 AgentMesh calculates:
+
 - Overall Quality Score ($0.0$ to $1.0$)
 - P95 Execution Latency
 - Combined Task Cost (Model + Tools + Delegations)
@@ -47,8 +50,10 @@ AgentMesh calculates:
 - Comparison against historical `EvaluationBaseline`
 
 ### Gating Verdict: `SafeToCanary`
+
 If all thresholds pass and no policy violations are detected:
-```
+
+```text
 ✓ Agent v1.1.0 Performance CI:
   Quality:      +2.1%  (PASS)
   P95 Latency:  -7.3%  (PASS)
@@ -56,4 +61,5 @@ If all thresholds pass and no policy violations are detected:
   Policy:       PASS
   Safe to Canary: YES
 ```
+
 If any threshold fails, CI exits with a non-zero code, preventing candidate deployment.

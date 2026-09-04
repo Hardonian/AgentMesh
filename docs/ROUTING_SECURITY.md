@@ -3,6 +3,7 @@
 As routing decisions increasingly depend on operational feedback, AgentMesh implements defensive boundaries to prevent routing poisoning, confused deputy exploits, and health spoofing.
 
 ## Threat Model & Defenses
+
 1. **Malicious Success Falsification**:
    - Threat: A rogue agent reports fake success to inflate its routing preference.
    - Defense: Provenance tiering. Proxy-measured outcomes and test-runner verifications are given higher trust weight than client self-reports.

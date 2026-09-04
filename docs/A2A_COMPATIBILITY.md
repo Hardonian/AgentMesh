@@ -5,7 +5,9 @@ The **AgentMesh A2A Compatibility Lab** (`internal/a2a/lab.go`) provides an obje
 ---
 
 ## 10 Core Interoperability Test Suites
+
 The Compatibility Lab executes 10 test categories:
+
 1. **Agent Discovery**: Verifies that `GET /a2a/agent-card` returns a compliant metadata card.
 2. **Schema Conformance**: Validates Agent Card fields (name, version, capabilities, endpoints, formats).
 3. **Task Invocation**: Dispatches a standard task and verifies synchronous or asynchronous task response schemas.
@@ -20,12 +22,15 @@ The Compatibility Lab executes 10 test categories:
 ---
 
 ## Compatibility Profiles
+
 Test runs produce an `A2ACompatibilityProfile`:
+
 - Status: `COMPATIBLE` (all mandatory tests passed), `PARTIALLY_COMPATIBLE` (non-critical features like streaming failed), or `INCOMPATIBLE`.
 - Numerical score ($0.0$ to $1.0$).
 - Granular result per test case with duration and error traces.
 
 Run tests via CLI:
+
 ```bash
 agentmesh a2a test http://localhost:8080
 ```

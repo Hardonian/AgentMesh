@@ -28,6 +28,7 @@ var (
 	reCookieHeader  = regexp.MustCompile(`(?i)(?:set-)?cookie:\s*[^\r\n]+`)
 	reGCPPrivateKey = regexp.MustCompile(`"private_key":\s*"-----BEGIN[^\"]+"`)
 	reAWSKey        = regexp.MustCompile(`AKIA[0-9A-Z]{16}`)
+	reAWSSecret     = regexp.MustCompile(`(?i)(?:secret|aws_secret|aws_secret_access_key)[=:\s]+[A-Za-z0-9/+=]{30,50}`)
 )
 
 // ScrubSecrets redacts sensitive credentials, tokens, cookies, database URLs, and keys from any text or logs.
@@ -46,6 +47,7 @@ func ScrubSecrets(input string) string {
 	cleaned = reCookieHeader.ReplaceAllString(cleaned, "Cookie: [REDACTED_COOKIE]")
 	cleaned = reGCPPrivateKey.ReplaceAllString(cleaned, `"private_key": "[REDACTED_PRIVATE_KEY]"`)
 	cleaned = reAWSKey.ReplaceAllString(cleaned, "[REDACTED_AWS_KEY]")
+	cleaned = reAWSSecret.ReplaceAllString(cleaned, "[REDACTED_AWS_SECRET]")
 	return cleaned
 }
 

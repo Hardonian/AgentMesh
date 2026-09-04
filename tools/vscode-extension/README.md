@@ -12,6 +12,7 @@ Developer tool for Google ADK, A2A, and MCP agent systems.
 ## Installation
 
 ### Local VS Code
+
 ```bash
 cd tools/vscode-extension
 npm install
@@ -19,6 +20,7 @@ npm run package # or press F5 in VS Code to launch the Extension Development Hos
 ```
 
 ### Google Cloud Shell
+
 Install directly into Cloud Shell Editor using the `.vsix` bundle or open the project folder in Cloud Shell.
 
 ## Commands

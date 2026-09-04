@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "name": "AgentMesh",
+  "tagline": "The open control plane for A2A and MCP agents",
+  "gitCommit": "c3f81e9",
+  "buildDate": "2026-09-04",
+  "goVersion": "go1.26.3",
+  "license": "Apache-2.0",
+  "certification": "GO",
+  "artifacts": [
+    {
+      "filename": "agentmesh-linux-amd64",
+      "os": "linux",
+      "arch": "amd64",
+      "sha256": "aee602079ca1c4de9d920a9110093263d3104c413535aed818e0da606b08bd34"
+    },
+    {
+      "filename": "agentmesh-linux-arm64",
+      "os": "linux",
+      "arch": "arm64",
+      "sha256": "b3cc43867daa3601c5061d0e37bcfdce08889c61aab1d30b0c2f0c8f21618090"
+    },
+    {
+      "filename": "agentmesh-darwin-arm64",
+      "os": "darwin",
+      "arch": "arm64",
+      "sha256": "ed7cc223c66a2b0d77cfe8a8b7aa5eec9fadc9a4def43903c428caaaac219687"
+    },
+    {
+      "filename": "agentmesh-windows-amd64.exe",
+      "os": "windows",
+      "arch": "amd64",
+      "sha256": "a4855a956b4e24ae1d35b57221ac92d038bda2179893d99b2933bc3509acf0b7"
+    }
+  ]
+}

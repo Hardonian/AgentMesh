@@ -31,6 +31,7 @@ import (
 var (
 	ErrNotFound      = errors.New("entity not found")
 	ErrAlreadyExists = errors.New("entity already exists")
+	ErrEmptyTenant   = errors.New("tenant ID cannot be empty")
 )
 
 type AgentRecord struct {
@@ -217,11 +218,14 @@ func (m *MemoryStore) GetAgent(ctx context.Context, tenantID, agentID string) (*
 }
 
 func (m *MemoryStore) ListAgents(ctx context.Context, tenantID string) ([]*AgentRecord, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var list []*AgentRecord
 	for _, rec := range m.agents {
-		if tenantID == "" || rec.TenantID == tenantID {
+		if rec.TenantID == tenantID {
 			list = append(list, rec)
 		}
 	}
@@ -253,11 +257,14 @@ func (m *MemoryStore) GetPolicy(ctx context.Context, tenantID, policyID string) 
 }
 
 func (m *MemoryStore) ListPolicies(ctx context.Context, tenantID string) ([]*policy.Policy, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var list []*policy.Policy
 	for _, pol := range m.policies {
-		if tenantID == "" || pol.TenantID == tenantID {
+		if pol.TenantID == tenantID {
 			list = append(list, pol)
 		}
 	}
@@ -282,11 +289,14 @@ func (m *MemoryStore) GetCredentialByHash(ctx context.Context, hashedKey string)
 }
 
 func (m *MemoryStore) ListCredentials(ctx context.Context, tenantID string) ([]*identity.Credential, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var list []*identity.Credential
 	for _, cred := range m.credentials {
-		if tenantID == "" || cred.TenantID == tenantID {
+		if cred.TenantID == tenantID {
 			list = append(list, cred)
 		}
 	}
@@ -301,11 +311,14 @@ func (m *MemoryStore) SaveTool(ctx context.Context, tool *ToolRecord) error {
 }
 
 func (m *MemoryStore) ListTools(ctx context.Context, tenantID string) ([]*ToolRecord, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var list []*ToolRecord
 	for _, tool := range m.tools {
-		if tenantID == "" || tool.TenantID == tenantID {
+		if tool.TenantID == tenantID {
 			list = append(list, tool)
 		}
 	}
@@ -331,11 +344,14 @@ func (m *MemoryStore) GetGraph(ctx context.Context, tenantID, graphID string) (*
 }
 
 func (m *MemoryStore) ListGraphs(ctx context.Context, tenantID string) ([]*graph.AgentGraph, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var list []*graph.AgentGraph
 	for k, g := range m.graphs {
-		if tenantID == "" || strings.HasPrefix(k, tenantID+":") {
+		if strings.HasPrefix(k, tenantID+":") {
 			list = append(list, g)
 		}
 	}
@@ -361,11 +377,14 @@ func (m *MemoryStore) GetToolPassport(ctx context.Context, tenantID, toolID stri
 }
 
 func (m *MemoryStore) ListToolPassports(ctx context.Context, tenantID string) ([]*mcp.ToolPassport, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var list []*mcp.ToolPassport
 	for k, tp := range m.toolPassports {
-		if tenantID == "" || strings.HasPrefix(k, tenantID+":") {
+		if strings.HasPrefix(k, tenantID+":") {
 			list = append(list, tp)
 		}
 	}
@@ -391,11 +410,14 @@ func (m *MemoryStore) GetA2AProfile(ctx context.Context, tenantID, profileID str
 }
 
 func (m *MemoryStore) ListA2AProfiles(ctx context.Context, tenantID string) ([]*a2a.A2ACompatibilityProfile, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var list []*a2a.A2ACompatibilityProfile
 	for k, p := range m.a2aProfiles {
-		if tenantID == "" || strings.HasPrefix(k, tenantID+":") {
+		if strings.HasPrefix(k, tenantID+":") {
 			list = append(list, p)
 		}
 	}
@@ -411,11 +433,14 @@ func (m *MemoryStore) SaveRouteOutcome(ctx context.Context, outcome *routing.Rou
 }
 
 func (m *MemoryStore) ListRouteOutcomes(ctx context.Context, tenantID string) ([]*routing.RouteOutcome, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var list []*routing.RouteOutcome
 	for _, o := range m.routeOutcomes {
-		if tenantID == "" || o.TenantID == tenantID {
+		if o.TenantID == tenantID {
 			list = append(list, o)
 		}
 	}
@@ -441,11 +466,14 @@ func (m *MemoryStore) GetEvaluationSuite(ctx context.Context, tenantID, suiteID 
 }
 
 func (m *MemoryStore) ListEvaluationSuites(ctx context.Context, tenantID string) ([]*evaluation.EvaluationSuite, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	var list []*evaluation.EvaluationSuite
 	for k, s := range m.evalSuites {
-		if tenantID == "" || strings.HasPrefix(k, tenantID+":") {
+		if strings.HasPrefix(k, tenantID+":") {
 			list = append(list, s)
 		}
 	}
@@ -465,11 +493,14 @@ func (m *MemoryStore) SaveRoutingOutcomeV3(ctx context.Context, outcome *routing
 }
 
 func (m *MemoryStore) ListRoutingOutcomesV3(ctx context.Context, tenantID, capabilityID string) ([]*routing.CanonicalRoutingOutcome, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	list := make([]*routing.CanonicalRoutingOutcome, 0)
 	for _, o := range m.routeOutcomesV3 {
-		if (tenantID == "" || o.OrganizationID == tenantID) && (capabilityID == "" || o.CapabilityID == capabilityID) {
+		if o.OrganizationID == tenantID && (capabilityID == "" || o.CapabilityID == capabilityID) {
 			list = append(list, o)
 		}
 	}
@@ -537,11 +568,14 @@ func (m *MemoryStore) GetAgentSLO(ctx context.Context, tenantID, agentID, capabi
 }
 
 func (m *MemoryStore) ListAgentSLOs(ctx context.Context, tenantID string) ([]*slo.AgentSLO, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	list := make([]*slo.AgentSLO, 0)
 	for _, s := range m.agentSLOs {
-		if tenantID == "" || s.TenantID == tenantID {
+		if s.TenantID == tenantID {
 			list = append(list, s)
 		}
 	}
@@ -559,11 +593,14 @@ func (m *MemoryStore) SaveProxyInstance(ctx context.Context, inst *fleet.ProxyIn
 }
 
 func (m *MemoryStore) ListProxyInstances(ctx context.Context, tenantID string) ([]*fleet.ProxyInstance, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	list := make([]*fleet.ProxyInstance, 0)
 	for _, inst := range m.proxyFleet {
-		if tenantID == "" || inst.TenantID == tenantID {
+		if inst.TenantID == tenantID {
 			list = append(list, inst)
 		}
 	}
@@ -591,11 +628,14 @@ func (m *MemoryStore) GetRoutingModel(ctx context.Context, tenantID, modelID str
 }
 
 func (m *MemoryStore) ListRoutingModels(ctx context.Context, tenantID string) ([]*learned.RoutingModelRecord, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	list := make([]*learned.RoutingModelRecord, 0)
 	for _, model := range m.routingModels {
-		if tenantID == "" || model.TenantID == tenantID {
+		if model.TenantID == tenantID {
 			list = append(list, model)
 		}
 	}
@@ -625,11 +665,14 @@ func (m *MemoryStore) GetOptimizationAction(ctx context.Context, tenantID, actio
 }
 
 func (m *MemoryStore) ListOptimizationActions(ctx context.Context, tenantID string) ([]*spec.AgentOptimizationAction, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	list := make([]*spec.AgentOptimizationAction, 0)
 	for _, a := range m.optimizationActions {
-		if tenantID == "" || a.OrganizationID == tenantID {
+		if a.OrganizationID == tenantID {
 			list = append(list, a)
 		}
 	}
@@ -657,11 +700,14 @@ func (m *MemoryStore) GetRoutingSpec(ctx context.Context, tenantID, capabilityID
 }
 
 func (m *MemoryStore) ListRoutingSpecs(ctx context.Context, tenantID string) ([]*spec.AgentRoutingSpec, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	list := make([]*spec.AgentRoutingSpec, 0)
 	for _, s := range m.routingSpecs {
-		if tenantID == "" || s.OrganizationID == tenantID {
+		if s.OrganizationID == tenantID {
 			list = append(list, s)
 		}
 	}
@@ -679,11 +725,14 @@ func (m *MemoryStore) SaveProductionOutcome(ctx context.Context, out *outcome.Ag
 }
 
 func (m *MemoryStore) ListProductionOutcomes(ctx context.Context, tenantID, capabilityID string) ([]*outcome.AgentProductionOutcome, error) {
+	if tenantID == "" {
+		return nil, ErrEmptyTenant
+	}
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 	list := make([]*outcome.AgentProductionOutcome, 0)
 	for _, o := range m.productionOutcomes {
-		if (tenantID == "" || o.OrganizationID == tenantID) &&
+		if o.OrganizationID == tenantID &&
 			(capabilityID == "" || o.CapabilityID == capabilityID) {
 			list = append(list, o)
 		}

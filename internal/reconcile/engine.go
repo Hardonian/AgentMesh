@@ -1,6 +1,7 @@
 package reconcile
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
@@ -31,6 +32,16 @@ func NewEngine() *Engine {
 
 // PlanRoutingReconciliation builds a multi-step progressive delivery plan between current and desired routing specs.
 func (e *Engine) PlanRoutingReconciliation(current, desired *spec.AgentRoutingSpec) (*ReconciliationPlan, error) {
+	if current == nil || desired == nil {
+		return nil, errors.New("current and desired specs cannot be nil")
+	}
+	if current.Weights == nil {
+		current.Weights = make(map[string]int)
+	}
+	if desired.Weights == nil {
+		desired.Weights = make(map[string]int)
+	}
+
 	now := time.Now().UTC()
 	planID := fmt.Sprintf("plan_route_%s_%d", desired.CapabilityID, now.Unix())
 

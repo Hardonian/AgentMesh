@@ -13,10 +13,7 @@ import (
 
 // handleListControlActions lists all optimization actions for a tenant.
 func (s *Server) handleListControlActions(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Header.Get("X-Tenant-ID")
-	if tenantID == "" {
-		tenantID = "default"
-	}
+	tenantID := getTenantID(r)
 
 	actions, err := s.store.ListOptimizationActions(r.Context(), tenantID)
 	if err != nil {
@@ -30,10 +27,7 @@ func (s *Server) handleListControlActions(w http.ResponseWriter, r *http.Request
 
 // handleCreateControlAction creates a new typed optimization action.
 func (s *Server) handleCreateControlAction(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Header.Get("X-Tenant-ID")
-	if tenantID == "" {
-		tenantID = "default"
-	}
+	tenantID := getTenantID(r)
 
 	var action spec.AgentOptimizationAction
 	if err := json.NewDecoder(r.Body).Decode(&action); err != nil {
@@ -92,10 +86,7 @@ func (s *Server) handleCreateControlAction(w http.ResponseWriter, r *http.Reques
 
 // handleGetControlAction retrieves an action by ID.
 func (s *Server) handleGetControlAction(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Header.Get("X-Tenant-ID")
-	if tenantID == "" {
-		tenantID = "default"
-	}
+	tenantID := getTenantID(r)
 	actionID := chi.URLParam(r, "id")
 
 	action, err := s.store.GetOptimizationAction(r.Context(), tenantID, actionID)
@@ -110,10 +101,7 @@ func (s *Server) handleGetControlAction(w http.ResponseWriter, r *http.Request) 
 
 // handleDryRunControlAction executes a dry run of an optimization action.
 func (s *Server) handleDryRunControlAction(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Header.Get("X-Tenant-ID")
-	if tenantID == "" {
-		tenantID = "default"
-	}
+	tenantID := getTenantID(r)
 	actionID := chi.URLParam(r, "id")
 
 	action, err := s.store.GetOptimizationAction(r.Context(), tenantID, actionID)
@@ -134,10 +122,7 @@ func (s *Server) handleDryRunControlAction(w http.ResponseWriter, r *http.Reques
 
 // handleApproveControlAction cryptographically binds approval to action hash.
 func (s *Server) handleApproveControlAction(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Header.Get("X-Tenant-ID")
-	if tenantID == "" {
-		tenantID = "default"
-	}
+	tenantID := getTenantID(r)
 	actionID := chi.URLParam(r, "id")
 
 	var req struct {
@@ -172,10 +157,7 @@ func (s *Server) handleApproveControlAction(w http.ResponseWriter, r *http.Reque
 
 // handleExecuteControlAction applies the approved optimization action.
 func (s *Server) handleExecuteControlAction(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Header.Get("X-Tenant-ID")
-	if tenantID == "" {
-		tenantID = "default"
-	}
+	tenantID := getTenantID(r)
 	actionID := chi.URLParam(r, "id")
 
 	action, err := s.store.GetOptimizationAction(r.Context(), tenantID, actionID)
@@ -184,9 +166,29 @@ func (s *Server) handleExecuteControlAction(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	// Verify kill switch is not active
+	// Invariant: Verify kill switch is not active
 	if frozen, reason := s.freezeMgr.IsFrozen(tenantID, action.ProjectID, action.CapabilityID); frozen {
 		http.Error(w, "cannot execute action: "+reason, http.StatusForbidden)
+		return
+	}
+
+	// Invariant: If approval is required, must be approved
+	if action.ApprovalRequirement.Required {
+		if action.ApprovedAt == nil || len(action.ApprovalRequirement.ApprovedBy) == 0 {
+			http.Error(w, "cannot execute action: pending approval required", http.StatusForbidden)
+			return
+		}
+		// Invariant: Verify action hash tampering post-approval
+		currentHash := action.ComputeActionHash()
+		if action.ApprovalRequirement.ActionHashBound != "" && action.ApprovalRequirement.ActionHashBound != currentHash {
+			http.Error(w, "cannot execute action: action hash does not match approved hash (tampering detected)", http.StatusConflict)
+			return
+		}
+	}
+
+	// Invariant: Replay / State Drift Protection (idempotency)
+	if action.CompletedAt != nil || action.Result == "SUCCESS" {
+		http.Error(w, "cannot execute action: action already executed", http.StatusConflict)
 		return
 	}
 
@@ -207,10 +209,7 @@ func (s *Server) handleExecuteControlAction(w http.ResponseWriter, r *http.Reque
 
 // handleRollbackControlAction restores the prior configuration.
 func (s *Server) handleRollbackControlAction(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Header.Get("X-Tenant-ID")
-	if tenantID == "" {
-		tenantID = "default"
-	}
+	tenantID := getTenantID(r)
 	actionID := chi.URLParam(r, "id")
 
 	action, err := s.store.GetOptimizationAction(r.Context(), tenantID, actionID)
@@ -294,10 +293,7 @@ func (s *Server) handleGetCanaryV3(w http.ResponseWriter, r *http.Request) {
 
 // handleListRoutingSpecs lists routing specs for a tenant.
 func (s *Server) handleListRoutingSpecs(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Header.Get("X-Tenant-ID")
-	if tenantID == "" {
-		tenantID = "default"
-	}
+	tenantID := getTenantID(r)
 
 	specs, err := s.store.ListRoutingSpecs(r.Context(), tenantID)
 	if err != nil {
@@ -311,10 +307,7 @@ func (s *Server) handleListRoutingSpecs(w http.ResponseWriter, r *http.Request) 
 
 // handleSaveRoutingSpec saves a desired routing specification.
 func (s *Server) handleSaveRoutingSpec(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Header.Get("X-Tenant-ID")
-	if tenantID == "" {
-		tenantID = "default"
-	}
+	tenantID := getTenantID(r)
 
 	var rSpec spec.AgentRoutingSpec
 	if err := json.NewDecoder(r.Body).Decode(&rSpec); err != nil {
@@ -336,10 +329,7 @@ func (s *Server) handleSaveRoutingSpec(w http.ResponseWriter, r *http.Request) {
 
 // handleListProductionOutcomes lists verified production outcomes.
 func (s *Server) handleListProductionOutcomes(w http.ResponseWriter, r *http.Request) {
-	tenantID := r.Header.Get("X-Tenant-ID")
-	if tenantID == "" {
-		tenantID = "default"
-	}
+	tenantID := getTenantID(r)
 	capabilityID := r.URL.Query().Get("capability")
 
 	outcomes, err := s.store.ListProductionOutcomes(r.Context(), tenantID, capabilityID)

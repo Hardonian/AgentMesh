@@ -5,7 +5,7 @@ This scorecard tracks the accumulation of defensible operational evidence across
 ## Moat Telemetry Dimensions
 
 | Telemetry Dimension | Tracking Objective | Status / Target |
-|---|---|---|
+| --- | --- | --- |
 | **Routing Outcomes Recorded** | Cumulative volume of observed real-world executions | Production Indexing Active (`routing_outcomes_v3`) |
 | **Capability Coverage** | Percentage of active organizational capabilities with empirical benchmarks | Minimum 1 baseline suite per capability |
 | **Evaluation Density** | Ratio of continuous evaluation runs to declared agent contracts | Evaluated on every version/model change |

@@ -1,15 +1,19 @@
 # Google Agent Developer Kit (ADK) Go Integration
 
 ## Overview
+
 AgentMesh provides first-class support for Go agents built using the Google Agent Developer Kit (ADK).
 
 ## Graph Awareness
+
 AgentMesh inspects ADK workflow graph topologies:
+
 - Identifies workflow nodes (Agents, Tools, Decisions, Delegations, Approvals).
 - Detects attached MCP tools and external service dependencies.
 - Synthesizes canonical `AgentContract` specifications directly from the Go code topology.
 
 ## Example Usage
+
 ```go
 import (
     "github.com/agentmesh/agentmesh/internal/adk"

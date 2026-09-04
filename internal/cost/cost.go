@@ -1,6 +1,8 @@
 package cost
 
 import (
+	"errors"
+	"math"
 	"strings"
 	"sync"
 )
@@ -45,10 +47,40 @@ func (ci *Intelligence) RegisterRate(modelID string, inputPer1K, outputPer1K, ca
 	}
 }
 
+// MicroUSD represents millionths of a US Dollar (integer minor units: $1.00 = 1,000,000 MicroUSD).
+type MicroUSD int64
+
+// ToMicroUSD converts a USD float to integer MicroUSD, rejecting negative values, NaN, and infinity.
+func ToMicroUSD(usd float64) (MicroUSD, error) {
+	if usd < 0 {
+		return 0, errors.New("monetary amount cannot be negative")
+	}
+	if math.IsNaN(usd) || math.IsInf(usd, 0) {
+		return 0, errors.New("monetary amount cannot be NaN or Infinite")
+	}
+	return MicroUSD(math.Round(usd * 1_000_000.0)), nil
+}
+
+// ToUSD converts integer MicroUSD back to standard USD floating point representation.
+func (m MicroUSD) ToUSD() float64 {
+	return float64(m) / 1_000_000.0
+}
+
 // CalculateCost computes total USD cost based on token counts.
 func (ci *Intelligence) CalculateCost(modelID string, inputTokens, outputTokens, cachedTokens int64) float64 {
 	ci.mu.RLock()
 	defer ci.mu.RUnlock()
+
+	// Invariant: Reject negative token counts
+	if inputTokens < 0 {
+		inputTokens = 0
+	}
+	if outputTokens < 0 {
+		outputTokens = 0
+	}
+	if cachedTokens < 0 {
+		cachedTokens = 0
+	}
 
 	rate, exists := ci.rates[strings.ToLower(modelID)]
 	if !exists {
@@ -60,5 +92,16 @@ func (ci *Intelligence) CalculateCost(modelID string, inputTokens, outputTokens,
 	outputCost := (float64(outputTokens) / 1000.0) * rate.OutputPer1K
 	cachedCost := (float64(cachedTokens) / 1000.0) * rate.CachedPer1K
 
-	return inputCost + outputCost + cachedCost
+	total := inputCost + outputCost + cachedCost
+	if math.IsNaN(total) || math.IsInf(total, 0) || total < 0 {
+		return 0.0
+	}
+	return total
+}
+
+// CalculateCostMicroUSD computes cost directly as canonical integer MicroUSD.
+func (ci *Intelligence) CalculateCostMicroUSD(modelID string, inputTokens, outputTokens, cachedTokens int64) MicroUSD {
+	costUSD := ci.CalculateCost(modelID, inputTokens, outputTokens, cachedTokens)
+	m, _ := ToMicroUSD(costUSD)
+	return m
 }

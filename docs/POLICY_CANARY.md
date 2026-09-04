@@ -8,7 +8,7 @@ AgentMesh implements **Policy Shadow Canaries** (`internal/policy/shadow.go`) to
 
 ## Architecture of Policy Shadow Mode
 
-```
+```text
 Incoming Request (Agent, Tool, Action)
                     ↓
         ┌───────────┴───────────┐
@@ -24,7 +24,9 @@ Incoming Request (Agent, Tool, Action)
 ```
 
 ### Invariant: Zero Disruption
+
 In shadow mode, the candidate policy **NEVER** enforces decisions on live traffic. The baseline policy continues to govern the request, while the shadow evaluator records:
+
 - Total evaluated traffic
 - `WouldAllowCount`, `WouldDenyCount`, `WouldApproveCount`
 - Discrepancy events where candidate and baseline diverge
@@ -32,5 +34,6 @@ In shadow mode, the candidate policy **NEVER** enforces decisions on live traffi
 ---
 
 ## Policy Promotion & Rollback
+
 - **Promotion**: If shadow evaluation yields zero unexpected denials over a designated window, operators promote the candidate to active baseline with one click.
 - **Rollback**: A signed snapshot of the `LastKnownGood` policy is permanently retained. In an emergency, `agentmesh-controller` restores the last known good policy within milliseconds.

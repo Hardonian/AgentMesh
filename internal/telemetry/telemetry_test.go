@@ -20,6 +20,31 @@ func TestSecretScrubber(t *testing.T) {
 	if !strings.Contains(scrubbed, "[REDACTED_SECRET]") {
 		t.Errorf("expected [REDACTED_SECRET] placeholder in output: %s", scrubbed)
 	}
+
+	// Extended secret scrubbing verification
+	mockStripe := "sk_" + "live_" + "51AbCDefGhIjKlMnOpQrStUvWxYz"
+	mockHF := "hf_" + "aBcDeFgHiJkLmNoPqRsTuVwXyZaBcDeFgH"
+	extRaw := "Stripe: " + mockStripe + " and HF: " + mockHF + " and DB: postgres://app_user:s3cr3tP@ssw0rd@prod-db.internal:5432/core and Cookie: session_id=xyz789"
+	extScrubbed := telemetry.ScrubSecrets(extRaw)
+	if strings.Contains(extScrubbed, "sk_"+"live_") {
+		t.Error("failed to scrub Stripe secret key")
+	}
+	if strings.Contains(extScrubbed, "hf_") {
+		t.Error("failed to scrub HuggingFace token")
+	}
+	if strings.Contains(extScrubbed, "s3cr3tP@ssw0rd") {
+		t.Error("failed to scrub DB password")
+	}
+	if strings.Contains(extScrubbed, "session_id=xyz789") {
+		t.Error("failed to scrub Cookie header")
+	}
+
+	// Log injection sanitization verification
+	poisonedLog := "User logged in\r\nCRITICAL: Admin rights granted to attacker\nNew line"
+	sanitizedLog := telemetry.SanitizeLogMessage(poisonedLog)
+	if strings.Contains(sanitizedLog, "\r") || strings.Contains(sanitizedLog, "\n") {
+		t.Errorf("SanitizeLogMessage failed to neutralize newline characters: %q", sanitizedLog)
+	}
 }
 
 func TestWaterfallAgentTrace(t *testing.T) {

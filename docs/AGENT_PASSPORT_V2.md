@@ -6,7 +6,7 @@ The **Agent Passport V2** (`pkg/passport/passport.go`) upgrades the Phase 1 pass
 
 ## The 10 Core Sections
 
-```
+```text
 ┌────────────────────────────────────────────────────────────┐
 │                    Agent Passport V2                       │
 ├────────────────────────────┬───────────────────────────────┤
@@ -26,7 +26,9 @@ The **Agent Passport V2** (`pkg/passport/passport.go`) upgrades the Phase 1 pass
 ---
 
 ## Section Provenance
+
 Every field exposes its provenance tier:
+
 - `DECLARED`: Self-reported by developer in AgentContract.
 - `MEASURED`: Verified in automated CI evaluation suites.
 - `OBSERVED`: Aggregated from real production proxy telemetry.
@@ -35,18 +37,23 @@ Every field exposes its provenance tier:
 ---
 
 ## Public vs Private Passport Sanitization
+
 By default, all Agent Passports are **PRIVATE**.
 
 When an organization publishes an agent to an external directory, AgentMesh invokes `passport.SanitizeForPublic()`:
+
 - **Redacts**: Private endpoint URLs, internal tenant IDs, restricted tools, sensitive policy rules, and internal graph node identifiers.
 - **Retains**: Verifiable name, version, protocol conformance status, capability badges, and public evaluation benchmarks.
 
 ---
 
 ## Verifiable Badges
+
 Generate status badges via CLI:
+
 ```bash
 agentmesh badge procurement-agent
 ```
+
 Produces an ASCII or SVG badge certifying:
 `AgentMesh Passport: PASS | A2A: COMPATIBLE | Policy: GOVERNED`

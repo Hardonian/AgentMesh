@@ -6,7 +6,7 @@ Google Cloud Run provides a serverless execution environment ideal for autoscali
 
 ## Deployment Architecture
 
-```
+```text
 Internet / VPC Network
         ↓
 Cloud Run Service: agentmesh-proxy
@@ -24,11 +24,13 @@ Cloud Run Service: adk-procurement-agent
 ## Recommended Deployment Steps
 
 1. **Build Container Image**:
+
    ```bash
    gcloud builds submit --tag gcr.io/${PROJECT_ID}/agentmesh-proxy:v2.0.0 .
    ```
 
 2. **Deploy Proxy with Workload Identity**:
+
    ```bash
    gcloud run deploy agentmesh-proxy \
        --image gcr.io/${PROJECT_ID}/agentmesh-proxy:v2.0.0 \

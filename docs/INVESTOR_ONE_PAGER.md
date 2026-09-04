@@ -1,9 +1,11 @@
 # AgentMesh — Investor One-Pager
 
 ## The Opportunity: The Operating System for Production AI Agent Networks
+
 Autonomous AI agents are shifting enterprise computing from monolithic LLM wrappers to distributed multi-agent systems connected across open protocols (Agent-to-Agent / A2A and Model Context Protocol / MCP).
 
 However, connecting agents safely in enterprise production requires answers to fundamental operational questions:
+
 - *Which agent should handle this task based on measured quality and cost?*
 - *Can this sub-agent safely delegate to a third-party tool without privilege escalation?*
 - *Did a tool schema change break an agent's execution graph?*
@@ -17,7 +19,7 @@ However, connecting agents safely in enterprise production requires answers to f
 
 The long-term enterprise value of AgentMesh is not merely the sub-millisecond Go proxy. The defensible moat is the **continuously compounding operational graph** of production agent systems:
 
-```
+```text
                   ┌──────────────────────────────┐
                   │   Agent Operational Graph    │
                   └──────────────┬───────────────┘
@@ -40,7 +42,7 @@ The long-term enterprise value of AgentMesh is not merely the sub-millisecond Go
 
 ## The Network Effect Engine
 
-```
+```text
 More Agents Deployed
         ↓
 More Dynamic Routes Evaluated
@@ -57,5 +59,6 @@ As more enterprise teams deploy agents through AgentMesh, the routing engine's c
 ---
 
 ## Business Model: Open-Core Infrastructure
+
 - **Open-Source Core (Apache 2.0)**: High-performance Go data plane proxy, A2A Compatibility Lab, MCP Gateway, AgentContract, AgentBOM, CLI, and reference policy engine.
 - **Enterprise Commercial Layer**: Hosted Graph Intelligence, Capability-Aware Multi-Stage Routing V2, Policy Shadow Canaries, Agent FinOps, enterprise policy packs, and multi-tenant fleet management.

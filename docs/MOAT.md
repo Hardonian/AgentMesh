@@ -3,7 +3,8 @@
 The long-term competitive advantage of AgentMesh is not simply proxying A2A requests or routing MCP calls. The real defensible moat is the continuously compounding operational outcome graph.
 
 ## The Compounding Operational Loop
-```
+
+```text
 AGENTS → TASKS → ROUTING → OUTCOMES → EVALUATIONS → RELIABILITY EVIDENCE → BETTER ROUTING → BETTER COST/LATENCY/QUALITY → MORE AGENTS
 ```
 
