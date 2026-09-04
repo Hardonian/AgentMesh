@@ -2,6 +2,7 @@ package approval
 
 import (
 	"crypto/sha256"
+	"crypto/subtle"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -23,11 +24,13 @@ const (
 )
 
 var (
-	ErrApprovalNotFound     = errors.New("approval request not found")
-	ErrApprovalNotPending   = errors.New("approval is not in PENDING state")
-	ErrApprovalExpired      = errors.New("approval request has expired")
-	ErrApprovalTampered     = errors.New("approval token parameter mismatch: parameters have been tampered with")
-	ErrApprovalUnauthorized = errors.New("approver is not authorized for this request")
+	ErrApprovalNotFound       = errors.New("approval request not found")
+	ErrApprovalNotPending     = errors.New("approval is not in PENDING state")
+	ErrApprovalExpired        = errors.New("approval request has expired")
+	ErrApprovalTampered       = errors.New("approval token parameter mismatch: parameters have been tampered with")
+	ErrApprovalUnauthorized   = errors.New("approver is not authorized for this request")
+	ErrApprovalConsumed       = errors.New("approval token has already been consumed")
+	ErrApprovalTenantMismatch = errors.New("approval token was issued for a different tenant")
 )
 
 // Request encapsulates a pending human approval decision.
