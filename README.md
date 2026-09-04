@@ -4,6 +4,10 @@
 
 *Identity, policy, routing, reliability, and progressive delivery for production AI agent systems.*
 
+<!-- BEGIN: REPO HERO -->
+![Repository hero generated locally on the GPU stack](assets/repo-hero.png)
+<!-- END: REPO HERO -->
+
 ---
 
 ```text
