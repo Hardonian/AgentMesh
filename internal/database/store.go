@@ -15,6 +15,7 @@ import (
 	"github.com/agentmesh/agentmesh/internal/fleet"
 	"github.com/agentmesh/agentmesh/internal/identity"
 	"github.com/agentmesh/agentmesh/internal/mcp"
+	"github.com/agentmesh/agentmesh/internal/outcome"
 	"github.com/agentmesh/agentmesh/internal/policy"
 	"github.com/agentmesh/agentmesh/internal/reliability"
 	"github.com/agentmesh/agentmesh/internal/routing"
@@ -23,6 +24,7 @@ import (
 	"github.com/agentmesh/agentmesh/pkg/contracts"
 	"github.com/agentmesh/agentmesh/pkg/graph"
 	"github.com/agentmesh/agentmesh/pkg/passport"
+	"github.com/agentmesh/agentmesh/pkg/spec"
 	"github.com/agentmesh/agentmesh/pkg/task"
 )
 
@@ -113,6 +115,21 @@ type Store interface {
 	SaveRoutingModel(ctx context.Context, model *learned.RoutingModelRecord) error
 	GetRoutingModel(ctx context.Context, tenantID, modelID string) (*learned.RoutingModelRecord, error)
 	ListRoutingModels(ctx context.Context, tenantID string) ([]*learned.RoutingModelRecord, error)
+
+	// Phase 4 Extensions
+	SaveOptimizationAction(ctx context.Context, action *spec.AgentOptimizationAction) error
+	GetOptimizationAction(ctx context.Context, tenantID, actionID string) (*spec.AgentOptimizationAction, error)
+	ListOptimizationActions(ctx context.Context, tenantID string) ([]*spec.AgentOptimizationAction, error)
+
+	SaveRoutingSpec(ctx context.Context, s *spec.AgentRoutingSpec) error
+	GetRoutingSpec(ctx context.Context, tenantID, capabilityID string) (*spec.AgentRoutingSpec, error)
+	ListRoutingSpecs(ctx context.Context, tenantID string) ([]*spec.AgentRoutingSpec, error)
+
+	SaveProductionOutcome(ctx context.Context, out *outcome.AgentProductionOutcome) error
+	ListProductionOutcomes(ctx context.Context, tenantID, capabilityID string) ([]*outcome.AgentProductionOutcome, error)
+
+	SaveAutomationPolicy(ctx context.Context, pol *policy.AutomationPolicy) error
+	GetAutomationPolicy(ctx context.Context, tenantID, projectID string) (*policy.AutomationPolicy, error)
 }
 
 // MemoryStore provides a thread-safe, tenant-isolated in-memory store.
@@ -133,6 +150,10 @@ type MemoryStore struct {
 	agentSLOs           map[string]*slo.AgentSLO                   // tenantID:agentID:cap -> slo
 	proxyFleet          map[string]*fleet.ProxyInstance            // tenantID:instanceID -> inst
 	routingModels       map[string]*learned.RoutingModelRecord     // tenantID:modelID -> model
+	optimizationActions map[string]*spec.AgentOptimizationAction   // tenantID:actionID -> action
+	routingSpecs        map[string]*spec.AgentRoutingSpec          // tenantID:capabilityID -> spec
+	productionOutcomes  []*outcome.AgentProductionOutcome
+	automationPolicies  map[string]*policy.AutomationPolicy        // tenantID:projectID -> policy
 	Approvals    *approval.Service
 	Canaries     *canary.Manager
 	Audit        *audit.Logger
@@ -156,6 +177,10 @@ func NewMemoryStore() *MemoryStore {
 		agentSLOs:           make(map[string]*slo.AgentSLO),
 		proxyFleet:          make(map[string]*fleet.ProxyInstance),
 		routingModels:       make(map[string]*learned.RoutingModelRecord),
+		optimizationActions: make(map[string]*spec.AgentOptimizationAction),
+		routingSpecs:        make(map[string]*spec.AgentRoutingSpec),
+		productionOutcomes:  make([]*outcome.AgentProductionOutcome, 0),
+		automationPolicies:  make(map[string]*policy.AutomationPolicy),
 		Approvals:           approval.NewService(),
 		Canaries:            canary.NewManager(),
 		Audit:               audit.NewLogger(),
@@ -576,3 +601,118 @@ func (m *MemoryStore) ListRoutingModels(ctx context.Context, tenantID string) ([
 	}
 	return list, nil
 }
+
+// Phase 4 Implementations
+
+func (m *MemoryStore) SaveOptimizationAction(ctx context.Context, action *spec.AgentOptimizationAction) error {
+	if action == nil {
+		return errors.New("action cannot be nil")
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.optimizationActions[action.OrganizationID+":"+action.ActionID] = action
+	return nil
+}
+
+func (m *MemoryStore) GetOptimizationAction(ctx context.Context, tenantID, actionID string) (*spec.AgentOptimizationAction, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	action, ok := m.optimizationActions[tenantID+":"+actionID]
+	if !ok {
+		return nil, ErrNotFound
+	}
+	return action, nil
+}
+
+func (m *MemoryStore) ListOptimizationActions(ctx context.Context, tenantID string) ([]*spec.AgentOptimizationAction, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	list := make([]*spec.AgentOptimizationAction, 0)
+	for _, a := range m.optimizationActions {
+		if tenantID == "" || a.OrganizationID == tenantID {
+			list = append(list, a)
+		}
+	}
+	return list, nil
+}
+
+func (m *MemoryStore) SaveRoutingSpec(ctx context.Context, s *spec.AgentRoutingSpec) error {
+	if s == nil {
+		return errors.New("spec cannot be nil")
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.routingSpecs[s.OrganizationID+":"+s.CapabilityID] = s
+	return nil
+}
+
+func (m *MemoryStore) GetRoutingSpec(ctx context.Context, tenantID, capabilityID string) (*spec.AgentRoutingSpec, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	s, ok := m.routingSpecs[tenantID+":"+capabilityID]
+	if !ok {
+		return nil, ErrNotFound
+	}
+	return s, nil
+}
+
+func (m *MemoryStore) ListRoutingSpecs(ctx context.Context, tenantID string) ([]*spec.AgentRoutingSpec, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	list := make([]*spec.AgentRoutingSpec, 0)
+	for _, s := range m.routingSpecs {
+		if tenantID == "" || s.OrganizationID == tenantID {
+			list = append(list, s)
+		}
+	}
+	return list, nil
+}
+
+func (m *MemoryStore) SaveProductionOutcome(ctx context.Context, out *outcome.AgentProductionOutcome) error {
+	if out == nil {
+		return errors.New("outcome cannot be nil")
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.productionOutcomes = append(m.productionOutcomes, out)
+	return nil
+}
+
+func (m *MemoryStore) ListProductionOutcomes(ctx context.Context, tenantID, capabilityID string) ([]*outcome.AgentProductionOutcome, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	list := make([]*outcome.AgentProductionOutcome, 0)
+	for _, o := range m.productionOutcomes {
+		if (tenantID == "" || o.OrganizationID == tenantID) &&
+			(capabilityID == "" || o.CapabilityID == capabilityID) {
+			list = append(list, o)
+		}
+	}
+	return list, nil
+}
+
+func (m *MemoryStore) SaveAutomationPolicy(ctx context.Context, pol *policy.AutomationPolicy) error {
+	if pol == nil {
+		return errors.New("policy cannot be nil")
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.automationPolicies[pol.OrganizationID+":"+pol.ProjectID] = pol
+	return nil
+}
+
+func (m *MemoryStore) GetAutomationPolicy(ctx context.Context, tenantID, projectID string) (*policy.AutomationPolicy, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	pol, ok := m.automationPolicies[tenantID+":"+projectID]
+	if !ok {
+		// Default to advisory mode
+		return &policy.AutomationPolicy{
+			OrganizationID: tenantID,
+			ProjectID:      projectID,
+			Mode:           policy.ModeAdvisory,
+		}, nil
+	}
+	return pol, nil
+}
+

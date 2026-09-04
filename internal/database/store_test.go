@@ -6,10 +6,12 @@ import (
 	"time"
 
 	"github.com/agentmesh/agentmesh/internal/fleet"
+	"github.com/agentmesh/agentmesh/internal/policy"
 	"github.com/agentmesh/agentmesh/internal/reliability"
 	"github.com/agentmesh/agentmesh/internal/routing"
 	"github.com/agentmesh/agentmesh/internal/routing/learned"
 	"github.com/agentmesh/agentmesh/internal/slo"
+	"github.com/agentmesh/agentmesh/pkg/spec"
 	"github.com/agentmesh/agentmesh/pkg/task"
 )
 
@@ -105,3 +107,56 @@ func TestMemoryStorePhase3Entities(t *testing.T) {
 		t.Errorf("failed to get model: %v", err)
 	}
 }
+
+func TestMemoryStorePhase4Entities(t *testing.T) {
+	store := NewMemoryStore()
+	ctx := context.Background()
+	tenant := "enterprise-x"
+
+	// 1. Optimization Action
+	act := &spec.AgentOptimizationAction{
+		ActionID:       "act-101",
+		OrganizationID: tenant,
+		ProjectID:      "proj-1",
+		CapabilityID:   "rag",
+		ActionType:     spec.ActionChangeRouteWeight,
+		RiskClass:      spec.RiskLow,
+	}
+	if err := store.SaveOptimizationAction(ctx, act); err != nil {
+		t.Fatalf("failed to save optimization action: %v", err)
+	}
+	retAct, err := store.GetOptimizationAction(ctx, tenant, "act-101")
+	if err != nil || retAct.ActionType != spec.ActionChangeRouteWeight {
+		t.Errorf("failed to retrieve optimization action: %v", err)
+	}
+
+	// 2. Routing Spec
+	rs := &spec.AgentRoutingSpec{
+		CapabilityID:   "rag",
+		OrganizationID: tenant,
+		Version:        "1.0",
+		Weights:        map[string]int{"agent-a": 100},
+	}
+	if err := store.SaveRoutingSpec(ctx, rs); err != nil {
+		t.Fatalf("failed to save routing spec: %v", err)
+	}
+	retRS, err := store.GetRoutingSpec(ctx, tenant, "rag")
+	if err != nil || retRS.Weights["agent-a"] != 100 {
+		t.Errorf("failed to retrieve routing spec: %v", err)
+	}
+
+	// 3. Automation Policy
+	pol := &policy.AutomationPolicy{
+		OrganizationID: tenant,
+		ProjectID:      "proj-1",
+		Mode:           policy.ModeGuardedAutomation,
+	}
+	if err := store.SaveAutomationPolicy(ctx, pol); err != nil {
+		t.Fatalf("failed to save automation policy: %v", err)
+	}
+	retPol, err := store.GetAutomationPolicy(ctx, tenant, "proj-1")
+	if err != nil || retPol.Mode != policy.ModeGuardedAutomation {
+		t.Errorf("failed to retrieve automation policy: %v", err)
+	}
+}
+
