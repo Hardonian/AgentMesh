@@ -33,6 +33,7 @@ type Credential struct {
 	Scopes      []string   `json:"scopes"`
 	CreatedAt   time.Time  `json:"createdAt"`
 	ExpiresAt   *time.Time `json:"expiresAt,omitempty"`
+	LastUsedAt  *time.Time `json:"lastUsedAt,omitempty"`
 	Revoked     bool       `json:"revoked"`
 	Description string     `json:"description,omitempty"`
 }
@@ -86,9 +87,11 @@ func (c *Credential) ValidateKey(rawKey string) error {
 	if c.ExpiresAt != nil && time.Now().UTC().After(*c.ExpiresAt) {
 		return errors.New("credential has expired")
 	}
-	if HashKey(rawKey) != c.HashedKey {
+	if subtle.ConstantTimeCompare([]byte(HashKey(rawKey)), []byte(c.HashedKey)) != 1 {
 		return errors.New("invalid key")
 	}
+	now := time.Now().UTC()
+	c.LastUsedAt = &now
 	return nil
 }
 
