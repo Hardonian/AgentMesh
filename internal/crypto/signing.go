@@ -87,20 +87,38 @@ func (kr *KeyRing) RegisterKey(keyID string, pubKey ed25519.PublicKey) {
 	kr.keys[keyID] = pubKey
 }
 
-// Verify checks the signature, key authenticity, and expiration of the bundle.
+// MaxAllowedClockSkew is the maximum permitted clock deviation for signature timestamp checks.
+const MaxAllowedClockSkew = 60 * time.Second
+
+var (
+	ErrBundleNil          = errors.New("signed bundle is nil")
+	ErrBundleFutureIssued = errors.New("bundle issued in the future: potential clock skew or forgery")
+	ErrBundleExpired      = errors.New("bundle has expired")
+	ErrUntrustedKey       = errors.New("unrecognized key ID: untrusted signer")
+	ErrSignatureInvalid   = errors.New("cryptographic signature verification failed: tampered payload or signature")
+)
+
+// Verify checks the signature, key authenticity, future-issuance, and expiration of the bundle.
 func (kr *KeyRing) Verify(bundle *SignedBundle) error {
 	if bundle == nil {
-		return errors.New("signed bundle is nil")
+		return ErrBundleNil
 	}
 
 	pubKey, exists := kr.keys[bundle.KeyID]
 	if !exists {
-		return fmt.Errorf("unrecognized key ID %q: untrusted signer", bundle.KeyID)
+		return fmt.Errorf("%w: unrecognized key ID %q", ErrUntrustedKey, bundle.KeyID)
 	}
 
 	now := time.Now().UTC()
-	if now.After(bundle.ExpiresAt) {
-		return fmt.Errorf("bundle has expired at %s (current time: %s)", bundle.ExpiresAt.Format(time.RFC3339), now.Format(time.RFC3339))
+
+	// 1. Future issuance attack protection
+	if bundle.IssuedAt.After(now.Add(MaxAllowedClockSkew)) {
+		return fmt.Errorf("%w: issued at %s (current time: %s)", ErrBundleFutureIssued, bundle.IssuedAt.Format(time.RFC3339), now.Format(time.RFC3339))
+	}
+
+	// 2. Expiration with clock skew grace
+	if now.After(bundle.ExpiresAt.Add(MaxAllowedClockSkew)) {
+		return fmt.Errorf("%w at %s (current time: %s)", ErrBundleExpired, bundle.ExpiresAt.Format(time.RFC3339), now.Format(time.RFC3339))
 	}
 
 	sigBytes, err := hex.DecodeString(bundle.Signature)
@@ -110,7 +128,7 @@ func (kr *KeyRing) Verify(bundle *SignedBundle) error {
 
 	digest := computeDigest(bundle.Version, bundle.KeyID, bundle.IssuedAt, bundle.ExpiresAt, bundle.Payload)
 	if !ed25519.Verify(pubKey, digest, sigBytes) {
-		return errors.New("cryptographic signature verification failed: tampered payload")
+		return ErrSignatureInvalid
 	}
 
 	return nil
