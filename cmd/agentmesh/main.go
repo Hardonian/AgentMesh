@@ -40,6 +40,12 @@ var (
 )
 
 func main() {
+	if err := newRootCmd().Execute(); err != nil {
+		os.Exit(1)
+	}
+}
+
+func newRootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{
 		Use:   "agentmesh",
 		Short: "AgentMesh: The open control plane for A2A and MCP agents",
@@ -94,9 +100,7 @@ reliability, and progressive delivery for production AI agent systems.`,
 	rootCmd.AddCommand(actionCmd())
 	rootCmd.AddCommand(automationCmd())
 
-	if err := rootCmd.Execute(); err != nil {
-		os.Exit(1)
-	}
+	return rootCmd
 }
 
 func initCmd() *cobra.Command {
