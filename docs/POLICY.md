@@ -1,6 +1,7 @@
 # Deterministic Policy Engine
 
 ## Principles
+
 1. **No LLMs in the Authorization Path**: Policy decisions must be mathematically deterministic, typed, and auditable.
 2. **Default Deny**: Privileged operations, untrusted tool calls, and cross-tenant interactions default to `DENY`.
 3. **Explicit Deny Precedence**: An explicit `DENY` rule immediately overrides any matching `ALLOW` rule.
@@ -33,6 +34,7 @@ rules:
 ```
 
 ## Policy Validation & Dry-Run CLI
+
 ```bash
 # Validate policy syntax
 agentmesh policy validate policy.yaml

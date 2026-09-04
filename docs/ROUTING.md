@@ -1,9 +1,10 @@
 # Capability-Based Routing Engine
 
 ## Routing Pipeline
+
 When an agent or client requests task routing by capability, AgentMesh executes a deterministic multi-stage pipeline:
 
-```
+```text
 Task Request (Capability = "financial_analysis")
                      │
                      ▼
@@ -29,6 +30,7 @@ Task Request (Capability = "financial_analysis")
 ```
 
 ## Supported Strategies
+
 - `LOWEST_COST`: Minimizes USD expenditure.
 - `LOWEST_LATENCY`: Minimizes P95 response time.
 - `HIGHEST_RELIABILITY`: Maximizes empirical success rate.
@@ -36,7 +38,9 @@ Task Request (Capability = "financial_analysis")
 - `BALANCED`: Weighted composite (40% reliability, 30% latency, 30% cost).
 
 ## Route Explanation CLI
+
 ```bash
 agentmesh route explain financial_analysis
 ```
+
 Returns a structured breakdown explaining why the winning candidate was selected and why other candidates were excluded.

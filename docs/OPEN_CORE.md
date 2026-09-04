@@ -3,7 +3,9 @@
 AgentMesh is built as an open-core enterprise infrastructure platform.
 
 ## Apache 2.0 Open Source Components
+
 The open-source core includes:
+
 - **`agentmesh-proxy`**: High-performance Go data plane proxy.
 - **`AgentContract`**: Canonical specification, JSON Schema, parser, and deterministic hashing.
 - **`AgentBOM` & `AgentPassport`**: Core specifications and generators.
@@ -15,7 +17,9 @@ The open-source core includes:
 - **Kubernetes Operator & Helm Chart**: Deployment automation.
 
 ## Commercial Extensions
+
 The commercial control plane layer provides:
+
 - Hosted, multi-tenant control plane fleet management.
 - Enterprise SSO (SAML 2.0, Okta, Google Workspace SAML) and SCIM provisioning.
 - Advanced predictive routing and operational graph intelligence.

@@ -1,13 +1,15 @@
 # Model Context Protocol (MCP) Gateway & MCPGuard
 
 ## Overview
+
 AgentMesh functions as a reverse proxy gateway sitting between MCP clients (agents) and MCP servers:
 
-```
+```text
 MCP Client (Agent) ──► AgentMesh MCP Gateway ──► Upstream MCP Tool Server
 ```
 
 ## Gateway Responsibilities
+
 1. **Tool Discovery (`tools/list`)**: Filters advertised tools based on the caller's active policy. Tools the agent is barred from executing are hidden from discovery.
 2. **Policy Enforcement (`tools/call`)**: Validates execution requests against deterministic policy before reaching the upstream tool server.
 3. **MCPGuard Subsystem**:

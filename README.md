@@ -6,7 +6,7 @@
 
 ---
 
-```
+```text
                        AGENTS (ADK / LangGraph / Custom / A2A)
                                        │
                           ┌────────────┴────────────┐
@@ -58,7 +58,9 @@ When enterprises deploy autonomous agents, they confront a critical infrastructu
 AgentMesh functions conceptually like **Envoy + Istio + OPA + Argo Rollouts specialized for AI agents**. It is a Go-native, vendor-neutral control plane and data plane that sits between autonomous agents and their downstream tools, models, and peer agents.
 
 ### Google-First, Never Google-Locked
+
 AgentMesh delivers first-class alignment with Google technologies:
+
 - **Google ADK for Go**: Ingests workflow graph topologies, discovers tools, and synthesizes AgentContracts.
 - **Gemini & Vertex AI**: First-class model provider adapters with dynamic token accounting and cost tracking.
 - **Google Cloud Run & GKE**: Production multi-stage Dockerfiles, Helm charts, and Kubernetes Operator.
@@ -70,7 +72,7 @@ AgentMesh delivers first-class alignment with Google technologies:
 ## The 5 Core Capabilities
 
 | Capability | What AgentMesh Provides |
-|---|---|
+| :--- | :--- |
 | **1. Identity** | Cryptographic identities for every agent, tool, and credential (`mesh_...`). Tenant-isolated RBAC with scoped keys. |
 | **2. Policy** | Deterministic, typed declarative rules (`ALLOW`, `DENY`, `REQUIRE_APPROVAL`). Zero LLM hallucinations in the authorization path. Data classifications (`PUBLIC`, `INTERNAL`, `CONFIDENTIAL`, `RESTRICTED`). |
 | **3. Routing** | Capability-based routing across eligible agents. Multi-stage filtering by health, policy, cost, and latency. Explainable routing decisions (`agentmesh route explain`). |
@@ -82,6 +84,7 @@ AgentMesh delivers first-class alignment with Google technologies:
 ## Core Primitives
 
 ### 1. AgentContract
+
 The canonical specification defining an agent's capabilities, tool allow/deny lists, delegation bounds, budgets, and SLOs:
 
 ```yaml
@@ -131,15 +134,19 @@ approval:
 ```
 
 ### 2. Agent Passport
+
 Combines declared contract specifications with empirical operational evidence:
+
 - Clearly separates `DECLARED` claims from `MEASURED` and `INFERRED` performance.
 - Tracks empirical success rates, measured P95 latencies, average task costs, and tool reliability scorecards.
 - *Rule: Never present declared capability as proven performance.*
 
 ### 3. AgentBOM (Agent Bill of Materials)
+
 Machine-readable inventory detailing an agent's runtime, models, MCP tools, delegation targets, data classifications, and dependencies.
 
 ### 4. A2A Firewall & MCPGuard
+
 - **A2A Firewall**: Enforces policy on agent-to-agent interactions, terminating delegation cycles (`A -> B -> A`) and preventing privilege escalation through delegation.
 - **MCPGuard**: Sits as a reverse proxy gateway in front of Model Context Protocol (MCP) servers, validating tool execution requests, enforcing data classifications, and intercepting sensitive operations for Human-in-the-Loop (HITL) approval.
 
@@ -148,11 +155,13 @@ Machine-readable inventory detailing an agent's runtime, models, MCP tools, dele
 ## Quickstart
 
 ### Prerequisites
+
 - Go 1.26+ installed
 - Node.js & pnpm (optional for web control plane)
 - Docker (optional for containerized deployment)
 
 ### 1. Clone and Build
+
 ```bash
 git clone https://github.com/agentmesh/agentmesh.git
 cd AgentMesh
@@ -162,18 +171,21 @@ make build
 ```
 
 ### 2. Start Local Control Plane (Zero External Dependencies)
+
 ```bash
 # Launches controller on port 8080 with in-memory datastore
 make dev
 ```
 
 In a second terminal, launch the high-performance data plane proxy:
+
 ```bash
 ./bin/agentmesh-proxy
 # Proxy is online on :9090
 ```
 
 ### 3. Register an Agent and Validate Contract
+
 ```bash
 # Initialize a starter contract
 ./bin/agentmesh init
@@ -243,7 +255,7 @@ func main() {
 
 ## Repository Layout
 
-```
+```text
 ├── cmd/
 │   ├── agentmesh/             # Unified Go CLI binary
 │   ├── agentmesh-proxy/       # Standalone high-performance data plane proxy
