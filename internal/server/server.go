@@ -1,21 +1,27 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/agentmesh/agentmesh/internal/a2a"
+	"github.com/agentmesh/agentmesh/internal/adk"
 	"github.com/agentmesh/agentmesh/internal/approval"
 	"github.com/agentmesh/agentmesh/internal/audit"
 	"github.com/agentmesh/agentmesh/internal/canary"
 	"github.com/agentmesh/agentmesh/internal/crypto"
 	"github.com/agentmesh/agentmesh/internal/database"
+	"github.com/agentmesh/agentmesh/internal/evaluation"
 	"github.com/agentmesh/agentmesh/internal/identity"
+	"github.com/agentmesh/agentmesh/internal/mcp"
 	"github.com/agentmesh/agentmesh/internal/policy"
 	"github.com/agentmesh/agentmesh/internal/routing"
 	"github.com/agentmesh/agentmesh/internal/telemetry"
 	"github.com/agentmesh/agentmesh/pkg/contracts"
+	"github.com/agentmesh/agentmesh/pkg/graph"
 	"github.com/agentmesh/agentmesh/pkg/passport"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -29,6 +35,7 @@ type Server struct {
 	store       database.Store
 	policyEng   *policy.Engine
 	routerEng   *routing.Router
+	routerV2    *routing.RouterV2
 	telemetry   *telemetry.Collector
 	canaryMgr   *canary.Manager
 	approvalSvc *approval.Service
@@ -51,6 +58,7 @@ func NewServer(
 		store:       store,
 		policyEng:   polEngine,
 		routerEng:   routeEngine,
+		routerV2:    routing.NewRouterV2(store),
 		telemetry:   tel,
 		canaryMgr:   cm,
 		approvalSvc: appSvc,
@@ -133,6 +141,43 @@ func (s *Server) setupRoutes() {
 
 		// Signed Config Bundle for Proxies
 		api.Get("/config/bundle", s.handleGetSignedConfigBundle)
+
+		// Graphs (Phase 2)
+		api.Post("/graphs", s.handleSaveGraph)
+		api.Get("/graphs", s.handleListGraphs)
+		api.Get("/graphs/{id}", s.handleGetGraph)
+		api.Post("/graphs/analyze", s.handleAnalyzeGraph)
+		api.Get("/agents/{id}/graph", s.handleGetAgentGraph)
+
+		// Passports & Badges (Phase 2)
+		api.Get("/agents/{id}/passport", s.handleGetAgentPassport)
+		api.Get("/agents/{id}/badge", s.handleGetAgentBadge)
+
+		// Tools & MCP (Phase 2)
+		api.Get("/tools/passports", s.handleListToolPassports)
+		api.Get("/tools/passports/{id}", s.handleGetToolPassport)
+		api.Post("/tools/passports", s.handleSaveToolPassport)
+		api.Post("/tools/drift", s.handleDetectToolDrift)
+
+		// Capabilities & Routing V2 (Phase 2)
+		api.Get("/capabilities", s.handleListCapabilities)
+		api.Post("/routing/simulate", s.handleSimulateRoute)
+		api.Get("/routing/outcomes", s.handleListRouteOutcomes)
+
+		// Policy V2 & Canaries (Phase 2)
+		api.Post("/policy/simulate", s.handleSimulatePolicy)
+		api.Post("/policy/canary", s.handlePolicyCanary)
+
+		// Evaluations & CI (Phase 2)
+		api.Post("/evaluations/run", s.handleRunEvaluation)
+		api.Get("/evaluations/results", s.handleListEvaluationResults)
+
+		// Change Impact (Phase 2)
+		api.Post("/canary/impact", s.handleAnalyzeChangeImpact)
+
+		// A2A Compatibility Lab (Phase 2)
+		api.Post("/a2a/test", s.handleTestA2AEndpoint)
+		api.Get("/a2a/profiles", s.handleListA2AProfiles)
 	})
 }
 

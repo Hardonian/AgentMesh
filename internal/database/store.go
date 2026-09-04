@@ -6,12 +6,17 @@ import (
 	"sync"
 	"time"
 
+	"github.com/agentmesh/agentmesh/internal/a2a"
 	"github.com/agentmesh/agentmesh/internal/approval"
 	"github.com/agentmesh/agentmesh/internal/audit"
 	"github.com/agentmesh/agentmesh/internal/canary"
+	"github.com/agentmesh/agentmesh/internal/evaluation"
 	"github.com/agentmesh/agentmesh/internal/identity"
+	"github.com/agentmesh/agentmesh/internal/mcp"
 	"github.com/agentmesh/agentmesh/internal/policy"
+	"github.com/agentmesh/agentmesh/internal/routing"
 	"github.com/agentmesh/agentmesh/pkg/contracts"
+	"github.com/agentmesh/agentmesh/pkg/graph"
 	"github.com/agentmesh/agentmesh/pkg/passport"
 )
 
@@ -62,30 +67,58 @@ type Store interface {
 
 	SaveTool(ctx context.Context, tool *ToolRecord) error
 	ListTools(ctx context.Context, tenantID string) ([]*ToolRecord, error)
+
+	SaveGraph(ctx context.Context, tenantID string, g *graph.AgentGraph) error
+	GetGraph(ctx context.Context, tenantID, graphID string) (*graph.AgentGraph, error)
+	ListGraphs(ctx context.Context, tenantID string) ([]*graph.AgentGraph, error)
+
+	SaveToolPassport(ctx context.Context, tenantID string, tp *mcp.ToolPassport) error
+	GetToolPassport(ctx context.Context, tenantID, toolID string) (*mcp.ToolPassport, error)
+	ListToolPassports(ctx context.Context, tenantID string) ([]*mcp.ToolPassport, error)
+
+	SaveA2AProfile(ctx context.Context, tenantID string, prof *a2a.A2ACompatibilityProfile) error
+	GetA2AProfile(ctx context.Context, tenantID, profileID string) (*a2a.A2ACompatibilityProfile, error)
+
+	SaveRouteOutcome(ctx context.Context, outcome *routing.RouteOutcome) error
+	ListRouteOutcomes(ctx context.Context, tenantID string) ([]*routing.RouteOutcome, error)
+
+	SaveEvaluationSuite(ctx context.Context, suite *evaluation.EvaluationSuite) error
+	GetEvaluationSuite(ctx context.Context, tenantID, suiteID string) (*evaluation.EvaluationSuite, error)
+	ListEvaluationSuites(ctx context.Context, tenantID string) ([]*evaluation.EvaluationSuite, error)
 }
 
 // MemoryStore provides a thread-safe, tenant-isolated in-memory store.
 type MemoryStore struct {
-	mu          sync.RWMutex
-	agents      map[string]*AgentRecord         // tenantID:agentID -> record
-	policies    map[string]*policy.Policy       // tenantID:policyID -> policy
-	credentials map[string]*identity.Credential // hashedKey -> cred
-	tools       map[string]*ToolRecord          // tenantID:toolID -> tool
-	Approvals   *approval.Service
-	Canaries    *canary.Manager
-	Audit       *audit.Logger
+	mu           sync.RWMutex
+	agents       map[string]*AgentRecord                 // tenantID:agentID -> record
+	policies     map[string]*policy.Policy               // tenantID:policyID -> policy
+	credentials  map[string]*identity.Credential         // hashedKey -> cred
+	tools        map[string]*ToolRecord                  // tenantID:toolID -> tool
+	graphs       map[string]*graph.AgentGraph            // tenantID:graphID -> graph
+	toolPassports map[string]*mcp.ToolPassport           // tenantID:toolID -> passport
+	a2aProfiles  map[string]*a2a.A2ACompatibilityProfile // tenantID:profileID -> profile
+	routeOutcomes []*routing.RouteOutcome
+	evalSuites   map[string]*evaluation.EvaluationSuite // tenantID:suiteID -> suite
+	Approvals    *approval.Service
+	Canaries     *canary.Manager
+	Audit        *audit.Logger
 }
 
 // NewMemoryStore constructs a ready in-memory datastore.
 func NewMemoryStore() *MemoryStore {
 	return &MemoryStore{
-		agents:      make(map[string]*AgentRecord),
-		policies:    make(map[string]*policy.Policy),
-		credentials: make(map[string]*identity.Credential),
-		tools:       make(map[string]*ToolRecord),
-		Approvals:   approval.NewService(),
-		Canaries:    canary.NewManager(),
-		Audit:       audit.NewLogger(),
+		agents:        make(map[string]*AgentRecord),
+		policies:      make(map[string]*policy.Policy),
+		credentials:   make(map[string]*identity.Credential),
+		tools:         make(map[string]*ToolRecord),
+		graphs:        make(map[string]*graph.AgentGraph),
+		toolPassports: make(map[string]*mcp.ToolPassport),
+		a2aProfiles:   make(map[string]*a2a.A2ACompatibilityProfile),
+		routeOutcomes: make([]*routing.RouteOutcome, 0),
+		evalSuites:    make(map[string]*evaluation.EvaluationSuite),
+		Approvals:     approval.NewService(),
+		Canaries:      canary.NewManager(),
+		Audit:         audit.NewLogger(),
 	}
 }
 
@@ -209,6 +242,134 @@ func (m *MemoryStore) ListTools(ctx context.Context, tenantID string) ([]*ToolRe
 	for _, tool := range m.tools {
 		if tenantID == "" || tool.TenantID == tenantID {
 			list = append(list, tool)
+		}
+	}
+	return list, nil
+}
+
+// Graphs
+func (m *MemoryStore) SaveGraph(ctx context.Context, tenantID string, g *graph.AgentGraph) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.graphs[tenantID+":"+g.GraphID] = g
+	return nil
+}
+
+func (m *MemoryStore) GetGraph(ctx context.Context, tenantID, graphID string) (*graph.AgentGraph, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	g, ok := m.graphs[tenantID+":"+graphID]
+	if !ok {
+		return nil, ErrNotFound
+	}
+	return g, nil
+}
+
+func (m *MemoryStore) ListGraphs(ctx context.Context, tenantID string) ([]*graph.AgentGraph, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var list []*graph.AgentGraph
+	for k, g := range m.graphs {
+		if tenantID == "" || strings.HasPrefix(k, tenantID+":") {
+			list = append(list, g)
+		}
+	}
+	return list, nil
+}
+
+// Tool Passports
+func (m *MemoryStore) SaveToolPassport(ctx context.Context, tenantID string, tp *mcp.ToolPassport) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.toolPassports[tenantID+":"+tp.ToolID] = tp
+	return nil
+}
+
+func (m *MemoryStore) GetToolPassport(ctx context.Context, tenantID, toolID string) (*mcp.ToolPassport, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	tp, ok := m.toolPassports[tenantID+":"+toolID]
+	if !ok {
+		return nil, ErrNotFound
+	}
+	return tp, nil
+}
+
+func (m *MemoryStore) ListToolPassports(ctx context.Context, tenantID string) ([]*mcp.ToolPassport, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var list []*mcp.ToolPassport
+	for k, tp := range m.toolPassports {
+		if tenantID == "" || strings.HasPrefix(k, tenantID+":") {
+			list = append(list, tp)
+		}
+	}
+	return list, nil
+}
+
+// A2A Profiles
+func (m *MemoryStore) SaveA2AProfile(ctx context.Context, tenantID string, prof *a2a.A2ACompatibilityProfile) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.a2aProfiles[tenantID+":"+prof.ID] = prof
+	return nil
+}
+
+func (m *MemoryStore) GetA2AProfile(ctx context.Context, tenantID, profileID string) (*a2a.A2ACompatibilityProfile, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	p, ok := m.a2aProfiles[tenantID+":"+profileID]
+	if !ok {
+		return nil, ErrNotFound
+	}
+	return p, nil
+}
+
+// Route Outcomes
+func (m *MemoryStore) SaveRouteOutcome(ctx context.Context, outcome *routing.RouteOutcome) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.routeOutcomes = append(m.routeOutcomes, outcome)
+	return nil
+}
+
+func (m *MemoryStore) ListRouteOutcomes(ctx context.Context, tenantID string) ([]*routing.RouteOutcome, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var list []*routing.RouteOutcome
+	for _, o := range m.routeOutcomes {
+		if tenantID == "" || o.TenantID == tenantID {
+			list = append(list, o)
+		}
+	}
+	return list, nil
+}
+
+// Evaluation Suites
+func (m *MemoryStore) SaveEvaluationSuite(ctx context.Context, suite *evaluation.EvaluationSuite) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.evalSuites[suite.TenantID+":"+suite.ID] = suite
+	return nil
+}
+
+func (m *MemoryStore) GetEvaluationSuite(ctx context.Context, tenantID, suiteID string) (*evaluation.EvaluationSuite, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	s, ok := m.evalSuites[tenantID+":"+suiteID]
+	if !ok {
+		return nil, ErrNotFound
+	}
+	return s, nil
+}
+
+func (m *MemoryStore) ListEvaluationSuites(ctx context.Context, tenantID string) ([]*evaluation.EvaluationSuite, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var list []*evaluation.EvaluationSuite
+	for k, s := range m.evalSuites {
+		if tenantID == "" || strings.HasPrefix(k, tenantID+":") {
+			list = append(list, s)
 		}
 	}
 	return list, nil
