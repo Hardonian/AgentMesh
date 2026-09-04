@@ -81,8 +81,9 @@ type RouteResult struct {
 type BaselineRouterV1 struct {
 	AlgorithmID      string
 	AlgorithmVersion string
-	HysteresisDelta  float64 // Minimum score lift needed to displace active incumbent agent (e.g. 0.05)
+	HysteresisDelta  float64           // Minimum score lift needed to displace active incumbent agent (e.g. 0.05)
 	ActiveRoutes     map[string]string // tenant:cap -> currently preferred agent
+	PinnedRoutes     map[string]string // tenant:cap -> operator pinned agent (Section 104)
 }
 
 // NewBaselineRouterV1 creates the standard deterministic baseline router.
@@ -92,6 +93,7 @@ func NewBaselineRouterV1() *BaselineRouterV1 {
 		AlgorithmVersion: "1.0.0",
 		HysteresisDelta:  0.05,
 		ActiveRoutes:     make(map[string]string),
+		PinnedRoutes:     make(map[string]string),
 	}
 }
 
@@ -257,9 +259,16 @@ func (r *BaselineRouterV1) Route(
 
 	topCandidate := eligible[0]
 
-	// Apply Routing Hysteresis: prevent rapid flapping if previous incumbent is still healthy
+	// Apply Route Pin / Override (Section 104) or Routing Hysteresis
 	activeKey := tenantID + ":" + req.Capability
-	if incumbentAgentID, ok := r.ActiveRoutes[activeKey]; ok && incumbentAgentID != topCandidate.Candidate.AgentID {
+	if pinnedAgentID, isPinned := r.PinnedRoutes[activeKey]; isPinned {
+		for _, ec := range eligible {
+			if ec.Candidate.AgentID == pinnedAgentID {
+				topCandidate = ec
+				break
+			}
+		}
+	} else if incumbentAgentID, ok := r.ActiveRoutes[activeKey]; ok && incumbentAgentID != topCandidate.Candidate.AgentID {
 		// Find incumbent in eligible list
 		for _, ec := range eligible {
 			if ec.Candidate.AgentID == incumbentAgentID {

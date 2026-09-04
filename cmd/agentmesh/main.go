@@ -1265,3 +1265,140 @@ func authCmd() *cobra.Command {
 
 	return cmd
 }
+
+func reliabilityCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "reliability",
+		Short: "Inspect agent statistical reliability profiles and rolling windows",
+	}
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "show [agent-id]",
+		Short: "Show statistical reliability profile and P50/P95 latency percentiles for an agent",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			resp, err := http.Get(serverURL + "/api/v1/reliability/" + args[0])
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+			var prof map[string]any
+			_ = json.NewDecoder(resp.Body).Decode(&prof)
+			out, _ := json.MarshalIndent(prof, "", "  ")
+			fmt.Println(string(out))
+			return nil
+		},
+	})
+
+	return cmd
+}
+
+func routerCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "router",
+		Short: "Inspect and manage learned routing models and shadow evaluation",
+	}
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "status",
+		Short: "List registered routing models and active production status",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			resp, err := http.Get(serverURL + "/api/v1/routers")
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+			var routers []any
+			_ = json.NewDecoder(resp.Body).Decode(&routers)
+			out, _ := json.MarshalIndent(routers, "", "  ")
+			fmt.Println(string(out))
+			return nil
+		},
+	})
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "shadow [model-id]",
+		Short: "Place a candidate routing model into shadow evaluation mode",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			body, _ := json.Marshal(map[string]string{"modelId": args[0]})
+			resp, err := http.Post(serverURL+"/api/v1/routers/shadow", "application/json", bytes.NewReader(body))
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+			fmt.Printf("✓ Model %q placed into SHADOW mode\n", args[0])
+			return nil
+		},
+	})
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "promote [model-id]",
+		Short: "Promote a candidate routing model to ACTIVE with automatic last-known-good rollback snapshot",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			body, _ := json.Marshal(map[string]string{"modelId": args[0]})
+			resp, err := http.Post(serverURL+"/api/v1/routers/promote", "application/json", bytes.NewReader(body))
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+			fmt.Printf("✓ Model %q promoted to ACTIVE production router\n", args[0])
+			return nil
+		},
+	})
+
+	return cmd
+}
+
+func sloCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "slo",
+		Short: "Inspect and track Agent SLOs and error budgets",
+	}
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "list",
+		Short: "List all registered Agent SLOs, compliance status, and error budgets",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			resp, err := http.Get(serverURL + "/api/v1/slos")
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+			var slos []any
+			_ = json.NewDecoder(resp.Body).Decode(&slos)
+			out, _ := json.MarshalIndent(slos, "", "  ")
+			fmt.Println(string(out))
+			return nil
+		},
+	})
+
+	return cmd
+}
+
+func proxyFleetCmd() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "proxy",
+		Short: "Inspect private enterprise proxy fleet in GKE, Cloud Run, and VMs",
+	}
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "fleet",
+		Short: "Display fleet summary, active proxy versions, and cluster health",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			resp, err := http.Get(serverURL + "/api/v1/proxy-fleet")
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+			var summary map[string]any
+			_ = json.NewDecoder(resp.Body).Decode(&summary)
+			out, _ := json.MarshalIndent(summary, "", "  ")
+			fmt.Println(string(out))
+			return nil
+		},
+	})
+
+	return cmd
+}
