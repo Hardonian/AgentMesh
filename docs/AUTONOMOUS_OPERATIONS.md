@@ -1,6 +1,7 @@
 # Autonomous Progressive Delivery & Policy-Bounded Optimization
 
 AgentMesh Phase 4 evolves from operational observation to policy-governed autonomous operations:
+
 ```text
 OBSERVE → DETECT → RECOMMEND → SIMULATE → POLICY CHECK → SHADOW → CANARY → MEASURE → PROMOTE / ROLLBACK → VERIFY OUTCOME → LEARN
 ```

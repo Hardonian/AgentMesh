@@ -3,6 +3,7 @@
 ## Execution Modes
 
 Organizations configure one of four operational modes:
+
 - **`ADVISORY` (Default)**: AgentMesh generates recommendations and change plans. No automated mutations are applied.
 - **`APPROVAL_REQUIRED`**: Automated workflows prepare change requests; a human operator must review and approve the exact action hash.
 - **`GUARDED_AUTOMATION`**: Low-risk changes (minor route weight shifts, healthy failovers) execute automatically under strict policy guardrails.

@@ -67,11 +67,12 @@ func (s *Server) handleCreateControlAction(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	if polDec.Status == policy.PolicyStatusApproved {
+	switch polDec.Status {
+	case policy.PolicyStatusApproved:
 		_, _ = s.workflowMgr.Transition(wf.WorkflowID, reconcile.StateApproved)
-	} else if polDec.Status == policy.PolicyStatusRequiresApproval {
+	case policy.PolicyStatusRequiresApproval:
 		_, _ = s.workflowMgr.Transition(wf.WorkflowID, reconcile.StateWaitingForApproval)
-	} else {
+	default:
 		_, _ = s.workflowMgr.Transition(wf.WorkflowID, reconcile.StateFailed)
 	}
 
