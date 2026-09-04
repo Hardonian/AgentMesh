@@ -24,16 +24,16 @@ const (
 
 // Credential represents a hashed secret associated with an agent or user.
 type Credential struct {
-	ID          string    `json:"id"`
-	TenantID    string    `json:"tenantId"`
-	SubjectID   string    `json:"subjectId"` // Agent ID or User ID
-	KeyPrefix   string    `json:"keyPrefix"` // First 8 chars for display
-	HashedKey   string    `json:"-"`         // SHA-256 hash
-	Scopes      []string  `json:"scopes"`
-	CreatedAt   time.Time `json:"createdAt"`
+	ID          string     `json:"id"`
+	TenantID    string     `json:"tenantId"`
+	SubjectID   string     `json:"subjectId"` // Agent ID or User ID
+	KeyPrefix   string     `json:"keyPrefix"` // First 8 chars for display
+	HashedKey   string     `json:"-"`         // SHA-256 hash
+	Scopes      []string   `json:"scopes"`
+	CreatedAt   time.Time  `json:"createdAt"`
 	ExpiresAt   *time.Time `json:"expiresAt,omitempty"`
-	Revoked     bool      `json:"revoked"`
-	Description string    `json:"description,omitempty"`
+	Revoked     bool       `json:"revoked"`
+	Description string     `json:"description,omitempty"`
 }
 
 // GenerateAPIKey creates a secure random API key and returns the plaintext key and the Credential record.

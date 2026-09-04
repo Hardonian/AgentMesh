@@ -76,14 +76,14 @@ type MCPCallToolResult struct {
 
 // MCPInitializeParams is passed when initializing an MCP session.
 type MCPInitializeParams struct {
-	ProtocolVersion string                 `json:"protocolVersion"`
-	Capabilities    map[string]any         `json:"capabilities"`
-	ClientInfo      map[string]string      `json:"clientInfo"`
+	ProtocolVersion string            `json:"protocolVersion"`
+	Capabilities    map[string]any    `json:"capabilities"`
+	ClientInfo      map[string]string `json:"clientInfo"`
 }
 
 // MCPInitializeResult is returned upon successful MCP session initialization.
 type MCPInitializeResult struct {
-	ProtocolVersion string         `json:"protocolVersion"`
-	Capabilities    map[string]any `json:"capabilities"`
+	ProtocolVersion string            `json:"protocolVersion"`
+	Capabilities    map[string]any    `json:"capabilities"`
 	ServerInfo      map[string]string `json:"serverInfo"`
 }

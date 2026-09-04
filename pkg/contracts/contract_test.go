@@ -97,7 +97,7 @@ identity:
 
 func TestContractDiff(t *testing.T) {
 	c1, _ := contracts.ParseYAML([]byte(sampleYAML))
-	
+
 	modYAML := sampleYAML + `
   - extra_cap
 `

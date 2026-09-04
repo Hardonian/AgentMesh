@@ -62,22 +62,22 @@ type AgentRegistrationResponse struct {
 }
 
 type AgentDetails struct {
-	AgentID   string                  `json:"agentId"`
+	AgentID   string                   `json:"agentId"`
 	Contract  *contracts.AgentContract `json:"contract"`
 	Passport  *passport.AgentPassport  `json:"passport"`
-	Status    string                  `json:"status"`
-	CreatedAt string                  `json:"createdAt"`
+	Status    string                   `json:"status"`
+	CreatedAt string                   `json:"createdAt"`
 }
 
 type PolicyEvaluationRequest struct {
-	SubjectAgentID      string            `json:"subjectAgentId"`
-	Capability          string            `json:"capability,omitempty"`
-	Tool                string            `json:"tool,omitempty"`
-	Action              string            `json:"action,omitempty"`
-	Resource            string            `json:"resource,omitempty"`
-	DataClassification  string            `json:"dataClassification,omitempty"`
-	DelegationStack     []string          `json:"delegationStack,omitempty"`
-	ParametersHash      string            `json:"parametersHash,omitempty"`
+	SubjectAgentID     string   `json:"subjectAgentId"`
+	Capability         string   `json:"capability,omitempty"`
+	Tool               string   `json:"tool,omitempty"`
+	Action             string   `json:"action,omitempty"`
+	Resource           string   `json:"resource,omitempty"`
+	DataClassification string   `json:"dataClassification,omitempty"`
+	DelegationStack    []string `json:"delegationStack,omitempty"`
+	ParametersHash     string   `json:"parametersHash,omitempty"`
 }
 
 type PolicyEvaluationResponse struct {
@@ -90,18 +90,18 @@ type PolicyEvaluationResponse struct {
 }
 
 type RoutingRequest struct {
-	RequiredCapability string   `json:"requiredCapability"`
-	Strategy           string   `json:"strategy"` // "LOWEST_COST", "LOWEST_LATENCY", "HIGHEST_RELIABILITY", "BALANCED"
-	MaxLatencyMs       int64    `json:"maxLatencyMs,omitempty"`
-	MaxCostUSD         float64  `json:"maxCostUsd,omitempty"`
-	CallerAgentID      string   `json:"callerAgentId"`
+	RequiredCapability string  `json:"requiredCapability"`
+	Strategy           string  `json:"strategy"` // "LOWEST_COST", "LOWEST_LATENCY", "HIGHEST_RELIABILITY", "BALANCED"
+	MaxLatencyMs       int64   `json:"maxLatencyMs,omitempty"`
+	MaxCostUSD         float64 `json:"maxCostUsd,omitempty"`
+	CallerAgentID      string  `json:"callerAgentId"`
 }
 
 type RoutingResponse struct {
-	SelectedAgentID string            `json:"selectedAgentId"`
-	EndpointURL     string            `json:"endpointUrl"`
-	Strategy        string            `json:"strategy"`
-	Reasoning       string            `json:"reasoning"`
+	SelectedAgentID string             `json:"selectedAgentId"`
+	EndpointURL     string             `json:"endpointUrl"`
+	Strategy        string             `json:"strategy"`
+	Reasoning       string             `json:"reasoning"`
 	CandidateScores map[string]float64 `json:"candidateScores"`
 }
 

@@ -17,11 +17,11 @@ import (
 type Strategy string
 
 const (
-	StrategyLowestCost       Strategy = "LOWEST_COST"
-	StrategyLowestLatency    Strategy = "LOWEST_LATENCY"
+	StrategyLowestCost         Strategy = "LOWEST_COST"
+	StrategyLowestLatency      Strategy = "LOWEST_LATENCY"
 	StrategyHighestReliability Strategy = "HIGHEST_RELIABILITY"
-	StrategyHighestQuality   Strategy = "HIGHEST_QUALITY"
-	StrategyBalanced         Strategy = "BALANCED"
+	StrategyHighestQuality     Strategy = "HIGHEST_QUALITY"
+	StrategyBalanced           Strategy = "BALANCED"
 )
 
 // AgentRouteCandidate represents an agent being evaluated for routing.
@@ -50,10 +50,10 @@ type RouteRequest struct {
 
 // CandidateExplanation details the eligibility decision for a candidate.
 type CandidateExplanation struct {
-	AgentID   string   `json:"agentId"`
-	Eligible  bool     `json:"eligible"`
-	Score     float64  `json:"score"`
-	Reasons   []string `json:"reasons"`
+	AgentID    string   `json:"agentId"`
+	Eligible   bool     `json:"eligible"`
+	Score      float64  `json:"score"`
+	Reasons    []string `json:"reasons"`
 	Exclusions []string `json:"exclusions,omitempty"`
 }
 

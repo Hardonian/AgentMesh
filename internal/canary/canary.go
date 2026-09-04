@@ -19,7 +19,7 @@ const (
 )
 
 var (
-	ErrCanaryNotFound       = errors.New("canary deployment not found")
+	ErrCanaryNotFound          = errors.New("canary deployment not found")
 	ErrCannotPromoteRolledBack = errors.New("cannot promote a rolled-back revision")
 )
 
@@ -34,19 +34,19 @@ type MetricSnapshot struct {
 
 // CanaryDeployment governs progressive rollout between baseline and candidate revisions.
 type CanaryDeployment struct {
-	ID                 string         `json:"id"`
-	AgentID            string         `json:"agentId"`
-	BaselineVersion    string         `json:"baselineVersion"`
-	CandidateVersion   string         `json:"candidateVersion"`
-	TrafficWeight      int            `json:"trafficWeight"` // Percentage to candidate: 1, 5, 10, 25, 50, 100
-	State              RevisionState  `json:"state"`
-	ShadowMode         bool           `json:"shadowMode"` // If true, mirrors traffic with writes blocked
-	BaselineMetrics    MetricSnapshot `json:"baselineMetrics"`
-	CandidateMetrics   MetricSnapshot `json:"candidateMetrics"`
-	MaxAllowedErrorRate float64       `json:"maxAllowedErrorRate"`
-	MaxAllowedLatencyMs int64         `json:"maxAllowedLatencyMs"`
-	LastEvaluatedAt    time.Time      `json:"lastEvaluatedAt"`
-	CreatedAt          time.Time      `json:"createdAt"`
+	ID                  string         `json:"id"`
+	AgentID             string         `json:"agentId"`
+	BaselineVersion     string         `json:"baselineVersion"`
+	CandidateVersion    string         `json:"candidateVersion"`
+	TrafficWeight       int            `json:"trafficWeight"` // Percentage to candidate: 1, 5, 10, 25, 50, 100
+	State               RevisionState  `json:"state"`
+	ShadowMode          bool           `json:"shadowMode"` // If true, mirrors traffic with writes blocked
+	BaselineMetrics     MetricSnapshot `json:"baselineMetrics"`
+	CandidateMetrics    MetricSnapshot `json:"candidateMetrics"`
+	MaxAllowedErrorRate float64        `json:"maxAllowedErrorRate"`
+	MaxAllowedLatencyMs int64          `json:"maxAllowedLatencyMs"`
+	LastEvaluatedAt     time.Time      `json:"lastEvaluatedAt"`
+	CreatedAt           time.Time      `json:"createdAt"`
 }
 
 // Manager coordinates canary deployments and evaluations.

@@ -30,9 +30,9 @@ type TaskUsage struct {
 
 // Tracker enforces task-level and organization-level budgets.
 type Tracker struct {
-	mu           sync.Mutex
-	dailyLimits  map[string]float64 // TenantID -> Max daily USD
-	dailyUsage   map[string]float64 // TenantID -> Consumed daily USD
+	mu             sync.Mutex
+	dailyLimits    map[string]float64 // TenantID -> Max daily USD
+	dailyUsage     map[string]float64 // TenantID -> Consumed daily USD
 	lastDailyReset time.Time
 }
 

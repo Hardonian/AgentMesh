@@ -190,10 +190,10 @@ func TestInvariant7_RouteNeverSelectsPolicyIneligible(t *testing.T) {
 		TenantID: "corp",
 		Rules: []policy.Rule{
 			{
-				Name:    "Explicit deny agent-evil from being invoked",
-				Effect:  policy.EffectDeny,
-				Agents:  []string{"*"},
-				Actions: []string{"invoke"},
+				Name:      "Explicit deny agent-evil from being invoked",
+				Effect:    policy.EffectDeny,
+				Agents:    []string{"*"},
+				Actions:   []string{"invoke"},
 				Resources: []string{"agent-evil"},
 			},
 		},

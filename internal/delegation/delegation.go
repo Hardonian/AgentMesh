@@ -10,10 +10,10 @@ import (
 )
 
 var (
-	ErrCycleDetected          = errors.New("delegation cycle detected")
-	ErrMaxDepthExceeded       = errors.New("maximum delegation depth exceeded")
-	ErrPrivilegeEscalation    = errors.New("delegation privilege escalation: origin caller lacks permission for delegated action")
-	ErrDisallowedDelegate     = errors.New("target agent is not in the caller's allowed delegation list")
+	ErrCycleDetected       = errors.New("delegation cycle detected")
+	ErrMaxDepthExceeded    = errors.New("maximum delegation depth exceeded")
+	ErrPrivilegeEscalation = errors.New("delegation privilege escalation: origin caller lacks permission for delegated action")
+	ErrDisallowedDelegate  = errors.New("target agent is not in the caller's allowed delegation list")
 )
 
 // DelegationHop represents a single step in a multi-agent delegation path.
@@ -25,9 +25,9 @@ type DelegationHop struct {
 
 // Chain manages the delegation stack for an ongoing task.
 type Chain struct {
-	Stack       []string          // Ordered list of Agent IDs from origin to current
-	HopDetails  []DelegationHop
-	MaxDepth    int
+	Stack      []string // Ordered list of Agent IDs from origin to current
+	HopDetails []DelegationHop
+	MaxDepth   int
 }
 
 // NewChain starts a new delegation chain with the origin agent.

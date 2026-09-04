@@ -1,0 +1,74 @@
+name: AgentMesh CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  go-ci:
+    name: Go Test, Race, & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache: true
+
+      - name: Verify Formatting & Vet
+        run: |
+          if [ -n "$(gofmt -l .)" ]; then
+            echo "Go code is not formatted:"
+            gofmt -d .
+            exit 1
+          fi
+          go vet ./...
+
+      - name: Run Test Suite
+        run: go test -v ./pkg/... ./internal/... ./tests/...
+
+      - name: Run Race Detector
+        run: go test -race -v ./pkg/... ./internal/... ./tests/...
+
+      - name: Build All Binaries
+        run: |
+          mkdir -p bin
+          go build -v -o bin/agentmesh ./cmd/agentmesh
+          go build -v -o bin/agentmesh-proxy ./cmd/agentmesh-proxy
+          go build -v -o bin/agentmesh-controller ./cmd/agentmesh-controller
+          go build -v -o bin/agentmesh-worker ./cmd/agentmesh-worker
+
+      - name: Run AgentMesh CI Check
+        run: ./bin/agentmesh ci
+
+  frontend-ci:
+    name: Web Control Plane Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'pnpm'
+          cache-dependency-path: 'web/control-plane/pnpm-lock.yaml'
+
+      - name: Install Dependencies
+        working-directory: web/control-plane
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Web Application
+        working-directory: web/control-plane
+        run: pnpm build

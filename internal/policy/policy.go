@@ -28,27 +28,27 @@ const (
 
 // Policy contains a set of declarative authorization rules.
 type Policy struct {
-	ID          string   `json:"id" yaml:"id"`
-	Version     string   `json:"version" yaml:"version"`
-	Name        string   `json:"name" yaml:"name"`
-	TenantID    string   `json:"tenantId" yaml:"tenantId"`
-	Description string   `json:"description,omitempty" yaml:"description,omitempty"`
-	Rules       []Rule   `json:"rules" yaml:"rules"`
+	ID          string    `json:"id" yaml:"id"`
+	Version     string    `json:"version" yaml:"version"`
+	Name        string    `json:"name" yaml:"name"`
+	TenantID    string    `json:"tenantId" yaml:"tenantId"`
+	Description string    `json:"description,omitempty" yaml:"description,omitempty"`
+	Rules       []Rule    `json:"rules" yaml:"rules"`
 	CreatedAt   time.Time `json:"createdAt" yaml:"createdAt"`
 }
 
 // Rule defines a match condition and an authorization effect.
 type Rule struct {
-	Name                    string   `json:"name" yaml:"name"`
-	Effect                  Effect   `json:"effect" yaml:"effect"` // ALLOW, DENY, REQUIRE_APPROVAL
-	Agents                  []string `json:"agents,omitempty" yaml:"agents,omitempty"`
-	Capabilities            []string `json:"capabilities,omitempty" yaml:"capabilities,omitempty"`
-	Tools                   []string `json:"tools,omitempty" yaml:"tools,omitempty"`
-	Actions                 []string `json:"actions,omitempty" yaml:"actions,omitempty"`
-	Resources               []string `json:"resources,omitempty" yaml:"resources,omitempty"`
-	MaxDelegationDepth      int      `json:"maxDelegationDepth,omitempty" yaml:"maxDelegationDepth,omitempty"`
-	AllowedDataClasses      []string `json:"allowedDataClasses,omitempty" yaml:"allowedDataClasses,omitempty"`
-	DenyDataClasses         []string `json:"denyDataClasses,omitempty" yaml:"denyDataClasses,omitempty"`
+	Name               string   `json:"name" yaml:"name"`
+	Effect             Effect   `json:"effect" yaml:"effect"` // ALLOW, DENY, REQUIRE_APPROVAL
+	Agents             []string `json:"agents,omitempty" yaml:"agents,omitempty"`
+	Capabilities       []string `json:"capabilities,omitempty" yaml:"capabilities,omitempty"`
+	Tools              []string `json:"tools,omitempty" yaml:"tools,omitempty"`
+	Actions            []string `json:"actions,omitempty" yaml:"actions,omitempty"`
+	Resources          []string `json:"resources,omitempty" yaml:"resources,omitempty"`
+	MaxDelegationDepth int      `json:"maxDelegationDepth,omitempty" yaml:"maxDelegationDepth,omitempty"`
+	AllowedDataClasses []string `json:"allowedDataClasses,omitempty" yaml:"allowedDataClasses,omitempty"`
+	DenyDataClasses    []string `json:"denyDataClasses,omitempty" yaml:"denyDataClasses,omitempty"`
 }
 
 // EvaluationRequest provides the contextual attributes of an attempted invocation.

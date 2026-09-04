@@ -17,11 +17,11 @@ func TestPolicyEngine(t *testing.T) {
 		TenantID: "tenant_acme",
 		Rules: []policy.Rule{
 			{
-				Name:         "Allow BigQuery Read for Finance",
-				Effect:       policy.EffectAllow,
-				Agents:       []string{"finance-agent"},
-				Tools:        []string{"bigquery.read"},
-				Actions:      []string{"read"},
+				Name:               "Allow BigQuery Read for Finance",
+				Effect:             policy.EffectAllow,
+				Agents:             []string{"finance-agent"},
+				Tools:              []string{"bigquery.read"},
+				Actions:            []string{"read"},
 				AllowedDataClasses: []string{policy.DataClassInternal, policy.DataClassConfidential},
 			},
 			{

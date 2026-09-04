@@ -17,19 +17,19 @@ const (
 // AgentBOM is a machine-readable Software Bill of Materials (SBOM) for an AI agent,
 // specifying its declared runtime, models, MCP tools, delegations, and data classifications.
 type AgentBOM struct {
-	APIVersion   string                 `json:"apiVersion"`
-	Kind         string                 `json:"kind"`
-	Metadata     BOMMetadata            `json:"metadata"`
-	Agent        AgentIdentityInfo      `json:"agent"`
-	Models       []ModelDependency      `json:"models,omitempty"`
-	Protocols    []string               `json:"protocols"`
-	Tools        []ToolDependency       `json:"tools,omitempty"`
-	MCPServers   []MCPServerDependency  `json:"mcpServers,omitempty"`
-	Delegates    []string               `json:"delegates,omitempty"`
-	Permissions  []string               `json:"permissions,omitempty"`
-	DataClasses  []string               `json:"dataClasses,omitempty"`
-	Policies     []string               `json:"policies,omitempty"`
-	Dependencies []ComponentDependency  `json:"dependencies,omitempty"`
+	APIVersion   string                `json:"apiVersion"`
+	Kind         string                `json:"kind"`
+	Metadata     BOMMetadata           `json:"metadata"`
+	Agent        AgentIdentityInfo     `json:"agent"`
+	Models       []ModelDependency     `json:"models,omitempty"`
+	Protocols    []string              `json:"protocols"`
+	Tools        []ToolDependency      `json:"tools,omitempty"`
+	MCPServers   []MCPServerDependency `json:"mcpServers,omitempty"`
+	Delegates    []string              `json:"delegates,omitempty"`
+	Permissions  []string              `json:"permissions,omitempty"`
+	DataClasses  []string              `json:"dataClasses,omitempty"`
+	Policies     []string              `json:"policies,omitempty"`
+	Dependencies []ComponentDependency `json:"dependencies,omitempty"`
 }
 
 type BOMMetadata struct {

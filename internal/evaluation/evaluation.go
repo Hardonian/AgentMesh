@@ -19,14 +19,14 @@ const (
 
 // TestCase specifies a single evaluation scenario.
 type TestCase struct {
-	ID                 string            `json:"id"`
-	Name               string            `json:"name"`
-	InputCapability    string            `json:"inputCapability"`
-	InputParameters    map[string]any    `json:"inputParameters"`
-	ExpectedSubstrings []string          `json:"expectedSubstrings,omitempty"`
-	ForbiddenSubstrings []string         `json:"forbiddenSubstrings,omitempty"`
-	MaxAllowedLatencyMs int64            `json:"maxAllowedLatencyMs,omitempty"`
-	MaxAllowedCostUSD   float64          `json:"maxAllowedCostUsd,omitempty"`
+	ID                  string         `json:"id"`
+	Name                string         `json:"name"`
+	InputCapability     string         `json:"inputCapability"`
+	InputParameters     map[string]any `json:"inputParameters"`
+	ExpectedSubstrings  []string       `json:"expectedSubstrings,omitempty"`
+	ForbiddenSubstrings []string       `json:"forbiddenSubstrings,omitempty"`
+	MaxAllowedLatencyMs int64          `json:"maxAllowedLatencyMs,omitempty"`
+	MaxAllowedCostUSD   float64        `json:"maxAllowedCostUsd,omitempty"`
 }
 
 // TestResult records the outcome of a single test case execution.
@@ -40,16 +40,16 @@ type TestResult struct {
 
 // SuiteReport aggregates the results of an entire evaluation run.
 type SuiteReport struct {
-	AgentID       string        `json:"agentId"`
-	Version       string        `json:"version"`
-	TotalTests    int           `json:"totalTests"`
-	PassedTests   int           `json:"passedTests"`
-	FailedTests   int           `json:"failedTests"`
-	OverallScore  float64       `json:"overallScore"` // 0.0 to 1.0
-	Status        Status        `json:"status"`
-	Duration      time.Duration `json:"duration"`
-	Results       []TestResult  `json:"results"`
-	EvaluatedAt   time.Time     `json:"evaluatedAt"`
+	AgentID      string        `json:"agentId"`
+	Version      string        `json:"version"`
+	TotalTests   int           `json:"totalTests"`
+	PassedTests  int           `json:"passedTests"`
+	FailedTests  int           `json:"failedTests"`
+	OverallScore float64       `json:"overallScore"` // 0.0 to 1.0
+	Status       Status        `json:"status"`
+	Duration     time.Duration `json:"duration"`
+	Results      []TestResult  `json:"results"`
+	EvaluatedAt  time.Time     `json:"evaluatedAt"`
 }
 
 // RegressionReport compares candidate against baseline.

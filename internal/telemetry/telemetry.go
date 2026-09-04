@@ -38,18 +38,18 @@ const (
 
 // TraceSpan represents a single node in the waterfall visualization.
 type TraceSpan struct {
-	SpanID        string        `json:"spanId"`
-	ParentSpanID  string        `json:"parentSpanId,omitempty"`
-	Type          SpanType      `json:"type"`
-	Name          string        `json:"name"`
-	Subject       string        `json:"subject"` // Agent name, tool name, or model name
-	Status        string        `json:"status"`  // SUCCESS, ERROR, POLICY_DENIED
-	LatencyMs     int64         `json:"latencyMs"`
-	CostUSD       float64       `json:"costUsd"`
-	PolicyEffect  string        `json:"policyEffect,omitempty"`
-	ErrorDetail   string        `json:"errorDetail,omitempty"`
-	Timestamp     time.Time     `json:"timestamp"`
-	Metadata      map[string]any `json:"metadata,omitempty"`
+	SpanID       string         `json:"spanId"`
+	ParentSpanID string         `json:"parentSpanId,omitempty"`
+	Type         SpanType       `json:"type"`
+	Name         string         `json:"name"`
+	Subject      string         `json:"subject"` // Agent name, tool name, or model name
+	Status       string         `json:"status"`  // SUCCESS, ERROR, POLICY_DENIED
+	LatencyMs    int64          `json:"latencyMs"`
+	CostUSD      float64        `json:"costUsd"`
+	PolicyEffect string         `json:"policyEffect,omitempty"`
+	ErrorDetail  string         `json:"errorDetail,omitempty"`
+	Timestamp    time.Time      `json:"timestamp"`
+	Metadata     map[string]any `json:"metadata,omitempty"`
 }
 
 // AgentTrace groups spans into a complete end-to-end execution waterfall.

@@ -23,9 +23,9 @@ const (
 type PolicyCompliance string
 
 const (
-	ComplianceCompliant   PolicyCompliance = "COMPLIANT"
-	ComplianceViolations  PolicyCompliance = "VIOLATIONS_DETECTED"
-	ComplianceUnreviewed  PolicyCompliance = "UNREVIEWED"
+	ComplianceCompliant  PolicyCompliance = "COMPLIANT"
+	ComplianceViolations PolicyCompliance = "VIOLATIONS_DETECTED"
+	ComplianceUnreviewed PolicyCompliance = "UNREVIEWED"
 )
 
 // AgentPassport combines static declared configuration with operational evidence.
@@ -33,10 +33,10 @@ type AgentPassport struct {
 	APIVersion string `json:"apiVersion"`
 	Kind       string `json:"kind"`
 
-	Identity   PassportIdentity `json:"identity"`
-	Declared   DeclaredClaims   `json:"declared"`
+	Identity    PassportIdentity `json:"identity"`
+	Declared    DeclaredClaims   `json:"declared"`
 	Operational MeasuredEvidence `json:"operational"`
-	Audit      PassportAudit    `json:"audit"`
+	Audit       PassportAudit    `json:"audit"`
 }
 
 type PassportIdentity struct {

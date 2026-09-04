@@ -20,16 +20,16 @@ const (
 // AgentContract is the canonical specification governing an agent's identity,
 // capabilities, tool permissions, delegation rules, budgets, and SLOs.
 type AgentContract struct {
-	APIVersion string            `json:"apiVersion" yaml:"apiVersion"`
-	Kind       string            `json:"kind" yaml:"kind"`
-	Metadata   Metadata          `json:"metadata" yaml:"metadata"`
-	Identity   IdentityConfig    `json:"identity" yaml:"identity"`
-	Capabilities []string        `json:"capabilities" yaml:"capabilities"`
-	Tools      ToolsConfig       `json:"tools" yaml:"tools"`
-	Delegation DelegationConfig  `json:"delegation" yaml:"delegation"`
-	Budgets    BudgetConfig      `json:"budgets" yaml:"budgets"`
-	SLO        SLOConfig         `json:"slo,omitempty" yaml:"slo,omitempty"`
-	Approval   ApprovalConfig    `json:"approval,omitempty" yaml:"approval,omitempty"`
+	APIVersion   string           `json:"apiVersion" yaml:"apiVersion"`
+	Kind         string           `json:"kind" yaml:"kind"`
+	Metadata     Metadata         `json:"metadata" yaml:"metadata"`
+	Identity     IdentityConfig   `json:"identity" yaml:"identity"`
+	Capabilities []string         `json:"capabilities" yaml:"capabilities"`
+	Tools        ToolsConfig      `json:"tools" yaml:"tools"`
+	Delegation   DelegationConfig `json:"delegation" yaml:"delegation"`
+	Budgets      BudgetConfig     `json:"budgets" yaml:"budgets"`
+	SLO          SLOConfig        `json:"slo,omitempty" yaml:"slo,omitempty"`
+	Approval     ApprovalConfig   `json:"approval,omitempty" yaml:"approval,omitempty"`
 }
 
 type Metadata struct {
@@ -178,14 +178,14 @@ func (c *AgentContract) Hash() (string, error) {
 
 // ContractDiff represents differences between two contracts.
 type ContractDiff struct {
-	AddedCapabilities    []string `json:"addedCapabilities,omitempty"`
-	RemovedCapabilities  []string `json:"removedCapabilities,omitempty"`
-	AddedAllowedTools    []string `json:"addedAllowedTools,omitempty"`
-	RemovedAllowedTools  []string `json:"removedAllowedTools,omitempty"`
-	AddedDeniedTools     []string `json:"addedDeniedTools,omitempty"`
-	RemovedDeniedTools   []string `json:"removedDeniedTools,omitempty"`
-	BudgetChanged        bool     `json:"budgetChanged"`
-	SLOChanged           bool     `json:"sloChanged"`
+	AddedCapabilities   []string `json:"addedCapabilities,omitempty"`
+	RemovedCapabilities []string `json:"removedCapabilities,omitempty"`
+	AddedAllowedTools   []string `json:"addedAllowedTools,omitempty"`
+	RemovedAllowedTools []string `json:"removedAllowedTools,omitempty"`
+	AddedDeniedTools    []string `json:"addedDeniedTools,omitempty"`
+	RemovedDeniedTools  []string `json:"removedDeniedTools,omitempty"`
+	BudgetChanged       bool     `json:"budgetChanged"`
+	SLOChanged          bool     `json:"sloChanged"`
 }
 
 // Diff compares this contract against an older contract.

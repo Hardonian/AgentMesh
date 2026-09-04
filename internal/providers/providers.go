@@ -12,21 +12,21 @@ import (
 type IntegrationState string
 
 const (
-	StateLiveVerified   IntegrationState = "LIVE_VERIFIED"
-	StateConfigured     IntegrationState = "CONFIGURED"
-	StateNotConfigured  IntegrationState = "NOT_CONFIGURED"
-	StateDegraded       IntegrationState = "DEGRADED"
-	StateUnsupported    IntegrationState = "UNSUPPORTED"
+	StateLiveVerified  IntegrationState = "LIVE_VERIFIED"
+	StateConfigured    IntegrationState = "CONFIGURED"
+	StateNotConfigured IntegrationState = "NOT_CONFIGURED"
+	StateDegraded      IntegrationState = "DEGRADED"
+	StateUnsupported   IntegrationState = "UNSUPPORTED"
 )
 
 // GenerateRequest defines inputs to a model invocation.
 type GenerateRequest struct {
-	ModelID          string   `json:"modelId"`
-	SystemInstruction string  `json:"systemInstruction,omitempty"`
-	Prompt           string   `json:"prompt"`
-	MaxOutputTokens  int      `json:"maxOutputTokens,omitempty"`
-	Temperature      float64  `json:"temperature,omitempty"`
-	StopSequences    []string `json:"stopSequences,omitempty"`
+	ModelID           string   `json:"modelId"`
+	SystemInstruction string   `json:"systemInstruction,omitempty"`
+	Prompt            string   `json:"prompt"`
+	MaxOutputTokens   int      `json:"maxOutputTokens,omitempty"`
+	Temperature       float64  `json:"temperature,omitempty"`
+	StopSequences     []string `json:"stopSequences,omitempty"`
 }
 
 // GenerateResponse holds model output and token consumption metadata.

@@ -67,10 +67,10 @@ type Store interface {
 // MemoryStore provides a thread-safe, tenant-isolated in-memory store.
 type MemoryStore struct {
 	mu          sync.RWMutex
-	agents      map[string]*AgentRecord     // tenantID:agentID -> record
-	policies    map[string]*policy.Policy   // tenantID:policyID -> policy
+	agents      map[string]*AgentRecord         // tenantID:agentID -> record
+	policies    map[string]*policy.Policy       // tenantID:policyID -> policy
 	credentials map[string]*identity.Credential // hashedKey -> cred
-	tools       map[string]*ToolRecord      // tenantID:toolID -> tool
+	tools       map[string]*ToolRecord          // tenantID:toolID -> tool
 	Approvals   *approval.Service
 	Canaries    *canary.Manager
 	Audit       *audit.Logger

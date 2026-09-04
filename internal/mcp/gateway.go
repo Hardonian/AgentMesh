@@ -20,10 +20,10 @@ type UpstreamToolHandler func(ctx context.Context, toolName string, args map[str
 
 // Gateway is the standards-compliant MCP reverse proxy with MCPGuard policy enforcement.
 type Gateway struct {
-	mu             sync.RWMutex
-	policyEngine   *policy.Engine
-	approvalSvc    *approval.Service
-	budgetTracker  *budgets.Tracker
+	mu              sync.RWMutex
+	policyEngine    *policy.Engine
+	approvalSvc     *approval.Service
+	budgetTracker   *budgets.Tracker
 	circuitBreakers map[string]*reliability.CircuitBreaker
 	registeredTools map[string]protocol.MCPTool
 	upstreamHandler UpstreamToolHandler

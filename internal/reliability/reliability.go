@@ -21,15 +21,15 @@ const (
 
 // CircuitBreaker protects downstream agents, tools, or providers from cascading failures.
 type CircuitBreaker struct {
-	mu                sync.RWMutex
-	name              string
-	state             CircuitState
-	failureThreshold  int
-	failureCount      int
-	successThreshold  int
-	successCount      int
-	cooldownDuration  time.Duration
-	lastStateChange   time.Time
+	mu               sync.RWMutex
+	name             string
+	state            CircuitState
+	failureThreshold int
+	failureCount     int
+	successThreshold int
+	successCount     int
+	cooldownDuration time.Duration
+	lastStateChange  time.Time
 }
 
 // NewCircuitBreaker creates a circuit breaker.
@@ -103,14 +103,14 @@ func (cb *CircuitBreaker) State() CircuitState {
 type IdempotencyClass string
 
 const (
-	Idempotent     IdempotencyClass = "IDEMPOTENT"
-	SafeWithKey    IdempotencyClass = "SAFE_WITH_KEY"
-	NonRetryable   IdempotencyClass = "NON_RETRYABLE"
+	Idempotent   IdempotencyClass = "IDEMPOTENT"
+	SafeWithKey  IdempotencyClass = "SAFE_WITH_KEY"
+	NonRetryable IdempotencyClass = "NON_RETRYABLE"
 )
 
 // RetryPolicy defines parameters for safe retries.
 type RetryPolicy struct {
-	MaxAttempts int
+	MaxAttempts    int
 	InitialBackoff time.Duration
 	MaxBackoff     time.Duration
 }
@@ -168,11 +168,11 @@ func ExecuteWithRetry(ctx context.Context, class IdempotencyClass, policy RetryP
 
 // RateLimiter implements an in-memory token bucket rate limiter.
 type RateLimiter struct {
-	mu           sync.Mutex
-	rate         float64 // tokens per second
-	capacity     float64
-	tokens       float64
-	lastRefill   time.Time
+	mu         sync.Mutex
+	rate       float64 // tokens per second
+	capacity   float64
+	tokens     float64
+	lastRefill time.Time
 }
 
 // NewRateLimiter creates a token bucket rate limiter.

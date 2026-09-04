@@ -9,12 +9,12 @@ import (
 type TaskState string
 
 const (
-	TaskStatePending    TaskState = "PENDING"
-	TaskStateRunning    TaskState = "RUNNING"
-	TaskStateCompleted  TaskState = "COMPLETED"
-	TaskStateFailed     TaskState = "FAILED"
-	TaskStateCancelled  TaskState = "CANCELLED"
-	TaskStateBlocked    TaskState = "BLOCKED_ON_APPROVAL"
+	TaskStatePending   TaskState = "PENDING"
+	TaskStateRunning   TaskState = "RUNNING"
+	TaskStateCompleted TaskState = "COMPLETED"
+	TaskStateFailed    TaskState = "FAILED"
+	TaskStateCancelled TaskState = "CANCELLED"
+	TaskStateBlocked   TaskState = "BLOCKED_ON_APPROVAL"
 )
 
 // AgentCard provides standard machine-readable identity & capability discovery for A2A agents.
@@ -44,14 +44,14 @@ type AuthConfig struct {
 
 // A2ATaskRequest is sent to invoke an A2A agent.
 type A2ATaskRequest struct {
-	TaskID          string            `json:"taskId"`
-	CallerAgentID   string            `json:"callerAgentId"`
-	TargetAgentID   string            `json:"targetAgentId"`
-	Capability      string            `json:"capability"`
-	Parameters      map[string]any    `json:"parameters"`
-	Context         TaskContext       `json:"context"`
-	Deadline        *time.Time        `json:"deadline,omitempty"`
-	StreamRequested bool              `json:"streamRequested,omitempty"`
+	TaskID          string         `json:"taskId"`
+	CallerAgentID   string         `json:"callerAgentId"`
+	TargetAgentID   string         `json:"targetAgentId"`
+	Capability      string         `json:"capability"`
+	Parameters      map[string]any `json:"parameters"`
+	Context         TaskContext    `json:"context"`
+	Deadline        *time.Time     `json:"deadline,omitempty"`
+	StreamRequested bool           `json:"streamRequested,omitempty"`
 }
 
 // TaskContext passes trace, delegation stack, budget limits, and authorization claims.

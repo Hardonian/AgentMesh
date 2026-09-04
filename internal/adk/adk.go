@@ -11,10 +11,10 @@ import (
 type WorkflowNodeType string
 
 const (
-	NodeTypeAgent      WorkflowNodeType = "AGENT"
-	NodeTypeTool       WorkflowNodeType = "TOOL"
-	NodeTypeDecision   WorkflowNodeType = "DECISION"
-	NodeTypeDelegation WorkflowNodeType = "DELEGATION"
+	NodeTypeAgent         WorkflowNodeType = "AGENT"
+	NodeTypeTool          WorkflowNodeType = "TOOL"
+	NodeTypeDecision      WorkflowNodeType = "DECISION"
+	NodeTypeDelegation    WorkflowNodeType = "DELEGATION"
 	NodeTypeHumanApproval WorkflowNodeType = "HUMAN_APPROVAL"
 )
 
