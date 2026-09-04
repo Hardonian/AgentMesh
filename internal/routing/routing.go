@@ -118,13 +118,14 @@ func (r *Router) Route(ctx context.Context, req *RouteRequest) (*RouteDecision, 
 		}
 
 		// 1. Availability check: Disabled or Unhealthy agents are excluded
-		if cand.Status == "DISABLED" {
+		switch cand.Status {
+		case "DISABLED":
 			expl.Eligible = false
 			expl.Exclusions = append(expl.Exclusions, "agent is DISABLED")
-		} else if cand.Status == "UNHEALTHY" {
+		case "UNHEALTHY":
 			expl.Eligible = false
 			expl.Exclusions = append(expl.Exclusions, "agent health status is UNHEALTHY")
-		} else {
+		default:
 			expl.Reasons = append(expl.Reasons, fmt.Sprintf("status %s", cand.Status))
 		}
 

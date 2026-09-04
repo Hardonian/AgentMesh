@@ -115,8 +115,8 @@ func (s *CloudKMSSigner) SignConfigBundle(ctx context.Context, version string, t
 		Payload:   string(payloadBytes),
 	}
 
-	digest := sha256.Sum256([]byte(fmt.Sprintf("%s:%s:%d:%d:%s",
-		bundle.Version, bundle.KeyID, bundle.IssuedAt.Unix(), bundle.ExpiresAt.Unix(), bundle.Payload)))
+	digest := sha256.Sum256(fmt.Appendf(nil, "%s:%s:%d:%d:%s",
+		bundle.Version, bundle.KeyID, bundle.IssuedAt.Unix(), bundle.ExpiresAt.Unix(), bundle.Payload))
 
 	sig, err := s.SignDigest(ctx, digest[:])
 	if err != nil {

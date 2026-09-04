@@ -291,9 +291,10 @@ func (r *Router) RouteV2(ctx context.Context, req *RouteRequestV2) (*RouteDecisi
 
 	// Calculate route confidence (samples + tier bonus)
 	sampleBonus := 0.2
-	if winner.EvidenceTier == TierProductionObserved {
+	switch winner.EvidenceTier {
+	case TierProductionObserved:
 		sampleBonus = 0.5
-	} else if winner.EvidenceTier == TierEvaluated {
+	case TierEvaluated:
 		sampleBonus = 0.3
 	}
 	decision.Confidence = math.Min(1.0, 0.4+sampleBonus+(winner.ReliabilityScore*0.1))

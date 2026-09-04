@@ -239,8 +239,8 @@ func TestAll10_6_CloudKMSSignedConfigDistribution(t *testing.T) {
 		t.Fatalf("invalid hex signature: %v", err)
 	}
 
-	digest := sha256.Sum256([]byte(fmt.Sprintf("%s:%s:%d:%d:%s",
-		bundle.Version, bundle.KeyID, bundle.IssuedAt.Unix(), bundle.ExpiresAt.Unix(), bundle.Payload)))
+	digest := sha256.Sum256(fmt.Appendf(nil, "%s:%s:%d:%d:%s",
+		bundle.Version, bundle.KeyID, bundle.IssuedAt.Unix(), bundle.ExpiresAt.Unix(), bundle.Payload))
 
 	pubKey := ed25519.PublicKey(signer.GetPublicKey())
 	if !ed25519.Verify(pubKey, digest[:], sigBytes) {

@@ -91,6 +91,9 @@ type ReliabilityMetrics struct {
 	TimeoutRate         float64 `json:"timeoutRate"`
 	RetryRate           float64 `json:"retryRate"`
 	SampleCount         int64   `json:"sampleCount"`
+	RouteSharePct       float64 `json:"routeSharePct,omitempty"`
+	FailoverCount       int64   `json:"failoverCount,omitempty"`
+	SLOStatus           string  `json:"sloStatus,omitempty"`
 }
 
 type EconomicMetrics struct {
@@ -115,6 +118,7 @@ type EvaluationSummary struct {
 	RegressionsDetected int        `json:"regressionsDetected"`
 	LastEvaluatedAt     *time.Time `json:"lastEvaluatedAt,omitempty"`
 	SuiteID             string     `json:"suiteId,omitempty"`
+	Freshness           string     `json:"freshness,omitempty"` // CURRENT, AGING, STALE, INVALIDATED
 }
 
 type DeploymentState struct {
@@ -299,4 +303,19 @@ func FromJSON(data []byte) (*AgentPassport, error) {
 		return nil, fmt.Errorf("failed to parse passport JSON: %w", err)
 	}
 	return &p, nil
+}
+
+// RouterPassport represents operational provenance and verification of an AgentMesh routing algorithm.
+type RouterPassport struct {
+	APIVersion       string    `json:"apiVersion"`
+	Kind             string    `json:"kind"`
+	RouterID         string    `json:"routerId"`
+	Version          string    `json:"version"`
+	AlgorithmType    string    `json:"algorithmType"` // DETERMINISTIC_BASELINE, LEARNED_GBDT, CONTEXTUAL_BANDIT
+	Objective        string    `json:"objective"`
+	Status           string    `json:"status"` // CANDIDATE, SHADOW, ACTIVE, RETIRED
+	AgreementRate    float64   `json:"agreementRate"`
+	CostReductionPct float64   `json:"costReductionPct"`
+	IssuedAt         time.Time `json:"issuedAt"`
+	SignedBy         string    `json:"signedBy"`
 }
