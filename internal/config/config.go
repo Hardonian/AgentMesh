@@ -93,18 +93,26 @@ func NewProxyConfigCache(kr *crypto.KeyRing, engine *policy.Engine) *ProxyConfig
 	}
 }
 
-// UpdateFromBundle verifies signature and applies new configuration if valid.
-// Invariant: If update is invalid/tampered, retain previous last-known-good.
+var ErrConfigDowngrade = errors.New("cannot apply older config bundle: sequence/issuance downgrade rejected")
+
+// UpdateFromBundle verifies signature, validates monotonicity, and applies new configuration atomically.
+// Invariant: If update is invalid/tampered or older, retain previous last-known-good.
 func (c *ProxyConfigCache) UpdateFromBundle(bundle *crypto.SignedBundle, pol *policy.Policy) error {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 
-	// Cryptographic verification
+	// 1. Cryptographic verification (signature, future-issuance, expiration)
 	if err := c.keyRing.Verify(bundle); err != nil {
 		return fmt.Errorf("failed to verify bundle signature: %w", err)
 	}
 
-	// Update active cache
+	// 2. Downgrade attack protection: ensure new bundle is strictly newer than current
+	if c.lastValid != nil && !bundle.IssuedAt.After(c.lastValid.IssuedAt) {
+		return fmt.Errorf("%w: current config issued at %s, candidate issued at %s",
+			ErrConfigDowngrade, c.lastValid.IssuedAt.Format(time.RFC3339), bundle.IssuedAt.Format(time.RFC3339))
+	}
+
+	// 3. Atomic swap
 	c.lastValid = bundle
 	c.cachedPolicy = pol
 	c.lastSyncAt = time.Now().UTC()
@@ -127,9 +135,13 @@ func (c *ProxyConfigCache) Status() (version string, age time.Duration, hasConfi
 	return c.lastValid.Version, time.Since(c.lastSyncAt), true
 }
 
-// CachedPolicy returns the last known good policy.
+// CachedPolicy returns the last known good policy, or nil if expired.
 func (c *ProxyConfigCache) CachedPolicy() *policy.Policy {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+
+	if c.lastValid != nil && time.Now().UTC().After(c.lastValid.ExpiresAt) {
+		return nil // Expired config fails closed
+	}
 	return c.cachedPolicy
 }

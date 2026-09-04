@@ -116,8 +116,8 @@ func (kr *KeyRing) Verify(bundle *SignedBundle) error {
 		return fmt.Errorf("%w: issued at %s (current time: %s)", ErrBundleFutureIssued, bundle.IssuedAt.Format(time.RFC3339), now.Format(time.RFC3339))
 	}
 
-	// 2. Expiration with clock skew grace
-	if now.After(bundle.ExpiresAt.Add(MaxAllowedClockSkew)) {
+	// 2. Expiration check
+	if now.After(bundle.ExpiresAt) {
 		return fmt.Errorf("%w at %s (current time: %s)", ErrBundleExpired, bundle.ExpiresAt.Format(time.RFC3339), now.Format(time.RFC3339))
 	}
 

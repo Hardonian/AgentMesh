@@ -1,6 +1,7 @@
 package crypto_test
 
 import (
+	"errors"
 	"testing"
 	"time"
 
@@ -51,5 +52,15 @@ func TestSigningAndVerification(t *testing.T) {
 	bundle2, _ := crypto.SignPayload(kp2, "v2.0.0", 1*time.Hour, payload)
 	if err := keyRing.Verify(bundle2); err != nil {
 		t.Errorf("verification failed for rotated key bundle: %v", err)
+	}
+
+	// 5. Future-issued bundle rejection
+	futureBundle := *bundle
+	futureBundle.IssuedAt = time.Now().UTC().Add(10 * time.Minute)
+	// re-sign with future timestamp
+	futureSigned, _ := crypto.SignPayload(kp, "v1.0.0", 1*time.Hour, payload)
+	futureSigned.IssuedAt = time.Now().UTC().Add(10 * time.Minute)
+	if err := keyRing.Verify(futureSigned); !errors.Is(err, crypto.ErrBundleFutureIssued) {
+		t.Errorf("expected ErrBundleFutureIssued for future-dated bundle, got: %v", err)
 	}
 }
