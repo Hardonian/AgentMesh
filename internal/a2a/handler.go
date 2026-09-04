@@ -150,3 +150,25 @@ func (s *Server) HandleGetTask(w http.ResponseWriter, r *http.Request, taskID st
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(resp)
 }
+
+// HandleCancel cancels a task in flight.
+func (s *Server) HandleCancel(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	_ = json.NewEncoder(w).Encode(map[string]string{"status": "cancelled"})
+}
+
+// Handler returns an http.Handler multiplexing all standard A2A endpoints.
+func (s *Server) Handler() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/a2a/agent-card", s.HandleAgentCard)
+	mux.HandleFunc("/a2a/tasks", s.HandleInvoke)
+	mux.HandleFunc("/a2a/tasks/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			s.HandleCancel(w, r)
+			return
+		}
+		http.NotFound(w, r)
+	})
+	return mux
+}

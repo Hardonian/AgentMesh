@@ -2,6 +2,7 @@ package mcp
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -97,10 +98,11 @@ func (p *GoogleManagedMCPProvider) NormalizeTool(serviceID, toolName, descriptio
 	defer p.mu.Unlock()
 
 	fullName := fmt.Sprintf("google.%s.%s", serviceID, toolName)
+	rawSchema, _ := json.Marshal(schema)
 	tool := protocol.MCPTool{
 		Name:        fullName,
 		Description: fmt.Sprintf("[Google %s] %s", serviceID, description),
-		InputSchema: schema,
+		InputSchema: json.RawMessage(rawSchema),
 	}
 	p.tools[fullName] = tool
 	return tool
