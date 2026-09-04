@@ -3,6 +3,7 @@
 ## Projected vs. Verified Improvement
 
 AgentMesh maintains a strict boundary between projected and verified metrics:
+
 - **Projected Savings**: Estimates computed during optimization scheduling based on historical benchmarks.
 - **Verified Savings**: Empirical deltas calculated from equal-duration observation windows before and after a change, normalized across task complexity and request volume.
 

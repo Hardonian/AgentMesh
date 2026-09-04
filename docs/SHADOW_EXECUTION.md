@@ -5,6 +5,7 @@ Shadow Execution allows testing candidate models and agents against live product
 ## Side-Effect Containment
 
 To guarantee safety, AgentMesh intercepts tool calls during shadow invocations:
+
 - **Permitted**: Read-only tools (`bigquery.read`, `document.search`, `embeddings.compute`).
 - **Suppressed**: Side-effecting tools (`email.send`, `payment.charge`, `database.insert`, `cloud.delete`).
 

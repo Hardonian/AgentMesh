@@ -3,6 +3,7 @@
 ## Cryptographic Configuration Chaining
 
 Every route mutation generates an immutable, cryptographically signed data-plane configuration bundle:
+
 - `ConfigID`: Globally unique configuration identifier.
 - `SequenceVersion`: Monotonically increasing sequence number.
 - `PayloadHash`: SHA-256 digest of route weights, fallbacks, and capability ID.

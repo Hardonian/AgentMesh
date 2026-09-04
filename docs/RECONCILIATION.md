@@ -8,6 +8,7 @@ AgentMesh reconciles declarative desired state against observed runtime state:
 ## Safe Progressive Execution
 
 Reconciliation plans generate safe, staged execution steps rather than issuing abrupt switches:
+
 1. `validate_policy_eligibility`
 2. `shadow_traffic_evaluation`
 3. `canary_initial_stage_5pct`
