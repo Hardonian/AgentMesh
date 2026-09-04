@@ -1,35 +1,40 @@
 package agentbom
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/agentmesh/agentmesh/pkg/contracts"
 )
 
 const (
-	ExpectedAPIVersion = "agentmesh.dev/v1"
+	ExpectedAPIVersion = "agentmesh.dev/v2alpha1"
 	ExpectedKind       = "AgentBOM"
 )
 
-// AgentBOM is a machine-readable Software Bill of Materials (SBOM) for an AI agent,
-// specifying its declared runtime, models, MCP tools, delegations, and data classifications.
+// AgentBOM is the enterprise-grade operational bill of materials for autonomous AI agents.
 type AgentBOM struct {
-	APIVersion   string                `json:"apiVersion"`
-	Kind         string                `json:"kind"`
-	Metadata     BOMMetadata           `json:"metadata"`
-	Agent        AgentIdentityInfo     `json:"agent"`
-	Models       []ModelDependency     `json:"models,omitempty"`
-	Protocols    []string              `json:"protocols"`
-	Tools        []ToolDependency      `json:"tools,omitempty"`
-	MCPServers   []MCPServerDependency `json:"mcpServers,omitempty"`
-	Delegates    []string              `json:"delegates,omitempty"`
-	Permissions  []string              `json:"permissions,omitempty"`
-	DataClasses  []string              `json:"dataClasses,omitempty"`
-	Policies     []string              `json:"policies,omitempty"`
-	Dependencies []ComponentDependency `json:"dependencies,omitempty"`
+	APIVersion         string                `json:"apiVersion"`
+	Kind               string                `json:"kind"`
+	Metadata           BOMMetadata           `json:"metadata"`
+	Agent              AgentIdentityInfo     `json:"agent"`
+	ContractVersion    string                `json:"contractVersion"`
+	ContractHash       string                `json:"contractHash"`
+	GraphHash          string                `json:"graphHash,omitempty"`
+	SoftwareSBOMDigest string                `json:"softwareSbomDigest,omitempty"` // Linkage to SPDX/CycloneDX SBOM
+	Models             []ModelDependency     `json:"models,omitempty"`
+	Protocols          []string              `json:"protocols"`
+	Tools              []ToolDependency      `json:"tools,omitempty"`
+	MCPServers         []MCPServerDependency `json:"mcpServers,omitempty"`
+	Delegates          []string              `json:"delegates,omitempty"`
+	Permissions        []string              `json:"permissions,omitempty"`
+	DataClasses        []string              `json:"dataClasses,omitempty"`
+	A2AProfileRef      string                `json:"a2aProfileRef,omitempty"`
 }
 
 type BOMMetadata struct {
@@ -61,7 +66,8 @@ type ToolDependency struct {
 	Provider           string `json:"provider,omitempty"`
 	Server             string `json:"server,omitempty"`
 	Method             string `json:"method,omitempty"`
-	RiskClass          string `json:"riskClass,omitempty"` // "LOW", "MEDIUM", "HIGH", "CRITICAL"
+	Fingerprint        string `json:"fingerprint,omitempty"` // Stable tool schema fingerprint
+	RiskClass          string `json:"riskClass,omitempty"`   // "READ", "WRITE", "DESTRUCTIVE", etc.
 	DataClassification string `json:"dataClassification,omitempty"`
 }
 
@@ -72,17 +78,13 @@ type MCPServerDependency struct {
 	ToolCount int    `json:"toolCount"`
 }
 
-type ComponentDependency struct {
-	Name    string `json:"name"`
-	Version string `json:"version"`
-	Type    string `json:"type"` // "library", "sdk", "container"
-}
-
 // GenerateFromContract synthesizes an AgentBOM from an AgentContract.
 func GenerateFromContract(c *contracts.AgentContract, runtime, framework string) (*AgentBOM, error) {
 	if c == nil {
 		return nil, errors.New("cannot generate AgentBOM from nil contract")
 	}
+
+	cHash, _ := c.Hash()
 
 	bom := &AgentBOM{
 		APIVersion: ExpectedAPIVersion,
@@ -101,8 +103,10 @@ func GenerateFromContract(c *contracts.AgentContract, runtime, framework string)
 			Framework: framework,
 			Version:   c.Metadata.Version,
 		},
-		Protocols: c.Identity.Protocols,
-		Delegates: c.Delegation.Allow,
+		ContractVersion: c.Metadata.Version,
+		ContractHash:    cHash,
+		Protocols:       c.Identity.Protocols,
+		Delegates:       c.Delegation.Allow,
 	}
 
 	for _, toolName := range c.Tools.Allow {
@@ -113,7 +117,7 @@ func GenerateFromContract(c *contracts.AgentContract, runtime, framework string)
 		bom.Tools = append(bom.Tools, ToolDependency{
 			Name:               toolName,
 			DataClassification: classification,
-			RiskClass:          "MEDIUM",
+			RiskClass:          "READ",
 		})
 	}
 
@@ -124,10 +128,33 @@ func GenerateFromContract(c *contracts.AgentContract, runtime, framework string)
 	return bom, nil
 }
 
+// Hash returns the deterministic SHA-256 digest of canonical AgentBOM representation.
+func (b *AgentBOM) Hash() (string, error) {
+	clone := *b
+	clone.Metadata.GeneratedAt = time.Time{}
+
+	// Sort slices for canonical repeatability
+	sort.Strings(clone.Protocols)
+	sort.Strings(clone.Delegates)
+	sort.Strings(clone.Permissions)
+	sort.Strings(clone.DataClasses)
+	sort.Slice(clone.Tools, func(i, j int) bool {
+		return clone.Tools[i].Name < clone.Tools[j].Name
+	})
+
+	bytes, err := json.Marshal(clone)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal canonical bom: %w", err)
+	}
+
+	h := sha256.Sum256(bytes)
+	return hex.EncodeToString(h[:]), nil
+}
+
 // Validate checks AgentBOM structural requirements.
 func (b *AgentBOM) Validate() error {
-	if b.APIVersion != ExpectedAPIVersion {
-		return fmt.Errorf("unsupported apiVersion %q, expected %q", b.APIVersion, ExpectedAPIVersion)
+	if b.APIVersion == "" {
+		return errors.New("apiVersion is required")
 	}
 	if b.Kind != ExpectedKind {
 		return fmt.Errorf("unsupported kind %q, expected %q", b.Kind, ExpectedKind)
