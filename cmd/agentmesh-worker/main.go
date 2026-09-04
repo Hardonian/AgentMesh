@@ -11,6 +11,20 @@ import (
 	"github.com/agentmesh/agentmesh/internal/config"
 )
 
+func runWorker(ctx context.Context, cfg *config.AppConfig, logger *slog.Logger, interval time.Duration) error {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return ctx.Err()
+		case <-ticker.C:
+			logger.Debug("Worker heartbeat: checking agent health and active canaries")
+		}
+	}
+}
+
 func main() {
 	cfg, _ := config.LoadFromEnv()
 
@@ -26,22 +40,11 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	// Periodic tasks: health checks, canary evaluation, audit retention
-	ticker := time.NewTicker(10 * time.Second)
-	defer ticker.Stop()
-
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				return
-			case <-ticker.C:
-				logger.Debug("Worker heartbeat: checking agent health and active canaries")
-			}
-		}
+		_ = runWorker(ctx, cfg, logger, 10*time.Second)
 	}()
 
 	<-stop

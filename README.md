@@ -316,6 +316,9 @@ For complete architectural and operational security documentation:
 
 - [STRIDE Threat Model](docs/THREAT_MODEL.md)
 - [RBAC Authorization Matrix](docs/AUTHORIZATION_MATRIX.md)
+- [Enterprise Pricing Strategy & TCO](docs/PRICING_STRATEGY.md)
+- [Competitive Analysis & Moat Playbook](docs/COMPETITIVE_ANALYSIS.md)
+- [Top 100 System Recommendations](docs/TOP_100_RECOMMENDATIONS.md)
 - [Security Policy & Vulnerability Reporting](SECURITY.md)
 - [Privacy & Data Governance](PRIVACY.md)
 - [Launch Certification Certificate](docs/LAUNCH_CERTIFICATION.md)
@@ -333,6 +336,8 @@ For complete architectural and operational security documentation:
 | **Capability Routing** | ✅ Health, SLA & Cost | ❌ Path/Host routing only | ⚠️ Hardcoded routing |
 | **Progressive Agent Canaries** | ✅ Automated Rollbacks | ⚠️ Traffic split only | ❌ Manual rollback |
 | **Zero-Prompt Storage** | ✅ Guaranteed | ⚠️ Configurable | ⚠️ Often persisted |
+
+> For an in-depth 25-criteria matrix across 5 industry quadrants, TCO modeling, and objection handling battlecards, see the [Enterprise Competitive Analysis](docs/COMPETITIVE_ANALYSIS.md).
 
 ---
 

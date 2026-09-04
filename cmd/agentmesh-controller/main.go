@@ -22,22 +22,7 @@ import (
 	"github.com/agentmesh/agentmesh/internal/telemetry"
 )
 
-func main() {
-	cfg, err := config.LoadFromEnv()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Config error: %v\n", err)
-		os.Exit(1)
-	}
-
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelInfo,
-	}))
-
-	logger.Info("Starting AgentMesh Control Plane Controller",
-		"httpPort", cfg.HTTPPort,
-		"env", cfg.Environment,
-	)
-
+func buildControllerServer(cfg *config.AppConfig) (*server.Server, error) {
 	// Datastore (MemoryStore enables zero-dependency instant startup, Postgres configurable)
 	store := database.NewMemoryStore()
 
@@ -83,8 +68,7 @@ func main() {
 	// Cryptographic Signing Key
 	kp, err := crypto.GenerateKeyPair(cfg.SigningKeyID)
 	if err != nil {
-		logger.Error("Failed to generate ed25519 key pair", "error", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("failed to generate ed25519 key pair: %w", err)
 	}
 
 	srv := server.NewServer(
@@ -97,6 +81,30 @@ func main() {
 		auditLogger,
 		kp,
 	)
+	return srv, nil
+}
+
+func main() {
+	cfg, err := config.LoadFromEnv()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Config error: %v\n", err)
+		os.Exit(1)
+	}
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+
+	logger.Info("Starting AgentMesh Control Plane Controller",
+		"httpPort", cfg.HTTPPort,
+		"env", cfg.Environment,
+	)
+
+	srv, err := buildControllerServer(cfg)
+	if err != nil {
+		logger.Error("Failed to build controller server", "error", err)
+		os.Exit(1)
+	}
 
 	httpServer := &http.Server{
 		Addr:         fmt.Sprintf(":%d", cfg.HTTPPort),

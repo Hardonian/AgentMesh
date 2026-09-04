@@ -108,6 +108,9 @@ func (e *Engine) Evaluate(ctx context.Context, req *EvaluationRequest) *Decision
 	var matchedAllow *Decision
 
 	for _, pol := range e.policies {
+		if pol == nil {
+			continue
+		}
 		if pol.TenantID != "" && req.TenantID != "" && pol.TenantID != req.TenantID {
 			continue // Tenant isolation
 		}

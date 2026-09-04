@@ -446,7 +446,7 @@ func (s *Server) handleSavePolicy(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update active policies in engine
-	allPolicies, _ := s.store.ListPolicies(r.Context(), "")
+	allPolicies, _ := s.store.ListPolicies(r.Context(), tenantID)
 	s.policyEng.SetPolicies(allPolicies)
 
 	s.auditLogger.Log(tenantID, audit.EventPolicyPublished, "api", pol.ID, pol)

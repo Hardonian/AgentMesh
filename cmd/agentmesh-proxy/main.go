@@ -24,23 +24,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-func main() {
-	cfg, err := config.LoadFromEnv()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Configuration error: %v\n", err)
-		os.Exit(1)
-	}
-
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelInfo,
-	}))
-
-	logger.Info("Starting AgentMesh Data Plane Proxy",
-		"proxyPort", cfg.ProxyPort,
-		"env", cfg.Environment,
-		"controlPlaneURL", cfg.ControlPlaneURL,
-	)
-
+func buildProxyRouter(cfg *config.AppConfig) (http.Handler, *config.ProxyConfigCache, error) {
 	// Core data plane components
 	polEngine := policy.NewEngine([]*policy.Policy{})
 	keyRing := crypto.NewKeyRing()
@@ -108,6 +92,32 @@ func main() {
 		_ = json.NewEncoder(w).Encode(rpcResp)
 	})
 
+	return r, proxyCache, nil
+}
+
+func main() {
+	cfg, err := config.LoadFromEnv()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Configuration error: %v\n", err)
+		os.Exit(1)
+	}
+
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	}))
+
+	logger.Info("Starting AgentMesh Data Plane Proxy",
+		"proxyPort", cfg.ProxyPort,
+		"env", cfg.Environment,
+		"controlPlaneURL", cfg.ControlPlaneURL,
+	)
+
+	router, proxyCache, err := buildProxyRouter(cfg)
+	if err != nil {
+		logger.Error("Failed to build proxy router", "error", err)
+		os.Exit(1)
+	}
+
 	// Background config synchronizer from control plane
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -116,7 +126,7 @@ func main() {
 
 	server := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.ProxyPort),
-		Handler: r,
+		Handler: router,
 	}
 
 	stop := make(chan os.Signal, 1)
