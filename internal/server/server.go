@@ -20,13 +20,18 @@ import (
 	"github.com/agentmesh/agentmesh/internal/fleet"
 	"github.com/agentmesh/agentmesh/internal/identity"
 	"github.com/agentmesh/agentmesh/internal/mcp"
+	"github.com/agentmesh/agentmesh/internal/optimize"
 	"github.com/agentmesh/agentmesh/internal/outcome"
 	"github.com/agentmesh/agentmesh/internal/policy"
 	"github.com/agentmesh/agentmesh/internal/providers"
+	"github.com/agentmesh/agentmesh/internal/providers/execution"
+	"github.com/agentmesh/agentmesh/internal/reconcile"
 	"github.com/agentmesh/agentmesh/internal/reliability"
 	"github.com/agentmesh/agentmesh/internal/routing"
 	"github.com/agentmesh/agentmesh/internal/routing/intelligence"
 	"github.com/agentmesh/agentmesh/internal/routing/learned"
+	"github.com/agentmesh/agentmesh/internal/routing/mutation"
+	"github.com/agentmesh/agentmesh/internal/shadow"
 	"github.com/agentmesh/agentmesh/internal/slo"
 	"github.com/agentmesh/agentmesh/internal/telemetry"
 	"github.com/agentmesh/agentmesh/pkg/contracts"
@@ -58,6 +63,16 @@ type Server struct {
 	eventsDispatcher   *events.Dispatcher
 	baselineRouterV1   *intelligence.BaselineRouterV1
 	outcomeGraph       *outcome.OperationalOutcomeGraph
+	freezeMgr          *policy.FreezeManager
+	workflowMgr        *reconcile.WorkflowManager
+	canaryV3           *canary.EngineV3
+	shadowMgr          *shadow.Manager
+	routeMutator       *mutation.RouteMutator
+	optimizer          *optimize.Scheduler
+	proxyProvider      *execution.ProxyProvider
+	gkeProvider        *execution.GKEProvider
+	cloudRunProvider   *execution.CloudRunProvider
+	reconcileEng       *reconcile.Engine
 }
 
 func NewServer(
@@ -88,6 +103,16 @@ func NewServer(
 		eventsDispatcher:   events.NewDispatcher(""),
 		baselineRouterV1:   intelligence.NewBaselineRouterV1(),
 		outcomeGraph:       outcome.NewOperationalOutcomeGraph(),
+		freezeMgr:          policy.NewFreezeManager(),
+		workflowMgr:        reconcile.NewWorkflowManager(),
+		canaryV3:           canary.NewEngineV3(),
+		shadowMgr:          shadow.NewManager(),
+		routeMutator:       mutation.NewRouteMutator(""),
+		optimizer:          optimize.NewScheduler(10.0, 50, 15*time.Minute),
+		proxyProvider:      execution.NewProxyProvider(),
+		gkeProvider:        execution.NewGKEProvider(true),
+		cloudRunProvider:   execution.NewCloudRunProvider(),
+		reconcileEng:       reconcile.NewEngine(),
 	}
 
 	s.setupRoutes()
@@ -229,6 +254,21 @@ func (s *Server) setupRoutes() {
 		api.Post("/routers/promote", s.handlePromoteRouter)
 
 		api.Post("/analytics/export/bigquery", s.handleBigQueryExport)
+
+		// Control Plane (Phase 4)
+		api.Get("/control/actions", s.handleListControlActions)
+		api.Post("/control/actions", s.handleCreateControlAction)
+		api.Get("/control/actions/{id}", s.handleGetControlAction)
+		api.Post("/control/actions/{id}/dry-run", s.handleDryRunControlAction)
+		api.Post("/control/actions/{id}/approve", s.handleApproveControlAction)
+		api.Post("/control/actions/{id}/execute", s.handleExecuteControlAction)
+		api.Post("/control/actions/{id}/rollback", s.handleRollbackControlAction)
+		api.Post("/control/freeze", s.handleFreezeAutomation)
+		api.Post("/control/unfreeze", s.handleUnfreezeAutomation)
+		api.Get("/control/canaries/{id}", s.handleGetCanaryV3)
+		api.Get("/control/specs/routing", s.handleListRoutingSpecs)
+		api.Post("/control/specs/routing", s.handleSaveRoutingSpec)
+		api.Get("/control/outcomes", s.handleListProductionOutcomes)
 	})
 }
 

@@ -94,6 +94,36 @@ func NewAgentMeshMCPServer(tenantID string, dispatch func(ctx context.Context, t
 				Description: "Retrieve recent canonical routing outcomes and failure taxonomy events.",
 				InputSchema: json.RawMessage(`{"type":"object","properties":{"capabilityId":{"type":"string"},"limit":{"type":"integer"}},"required":[]}`),
 			},
+			{
+				Name:        "show_recommendation",
+				Description: "Retrieve pending candidate route optimization recommendations and cost/latency savings.",
+				InputSchema: json.RawMessage(`{"type":"object","properties":{"capabilityId":{"type":"string"}},"required":["capabilityId"]}`),
+			},
+			{
+				Name:        "show_action",
+				Description: "Inspect an optimization action, dry-run diff, and risk classification.",
+				InputSchema: json.RawMessage(`{"type":"object","properties":{"actionId":{"type":"string"}},"required":["actionId"]}`),
+			},
+			{
+				Name:        "show_canary",
+				Description: "Retrieve multi-stage progress, stage metrics, and rollback triggers for a canary rollout.",
+				InputSchema: json.RawMessage(`{"type":"object","properties":{"runId":{"type":"string"}},"required":["runId"]}`),
+			},
+			{
+				Name:        "explain_route_change",
+				Description: "Explain the architectural, risk, and economic delta between current and proposed routing specs.",
+				InputSchema: json.RawMessage(`{"type":"object","properties":{"capabilityId":{"type":"string"}},"required":["capabilityId"]}`),
+			},
+			{
+				Name:        "show_rollback",
+				Description: "Show the deterministic rollback plan, verification criteria, and last known good state for an action.",
+				InputSchema: json.RawMessage(`{"type":"object","properties":{"actionId":{"type":"string"}},"required":["actionId"]}`),
+			},
+			{
+				Name:        "show_autonomy_readiness",
+				Description: "Evaluate and report structured autonomy readiness dimensions (telemetry health, SLOs, rollback drills).",
+				InputSchema: json.RawMessage(`{"type":"object","properties":{"capabilityId":{"type":"string"}},"required":["capabilityId"]}`),
+			},
 		},
 	}
 	return server
