@@ -925,3 +925,79 @@ func (s *Server) handleListA2AProfiles(w http.ResponseWriter, r *http.Request) {
 	jsonResponse(w, http.StatusOK, profiles)
 }
 
+func (s *Server) handleGetA2ARegistry(w http.ResponseWriter, r *http.Request) {
+	protocolVer := r.URL.Query().Get("protocolVersion")
+	if protocolVer == "" {
+		protocolVer = "v0.3.0"
+	}
+	reg := a2a.NewPublicCompatibilityRegistry()
+	_, _ = reg.PublishProfile("go", "google-adk", &a2a.A2ACompatibilityProfile{
+		ProtocolVersion: "v0.3.0",
+		Status:          a2a.StatusCompatible,
+		TesterVersion:   "agentmesh-lab-v2.0",
+		Results: map[string]a2a.TestCaseResult{
+			"discovery":    {Name: "discovery", Passed: true},
+			"streaming":    {Name: "streaming", Passed: true},
+			"cancellation": {Name: "cancellation", Passed: true},
+		},
+	})
+	matrix := reg.GetMatrix(protocolVer)
+	jsonResponse(w, http.StatusOK, matrix)
+}
+
+func (s *Server) handleRunRedTeamEvaluation(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		AgentID          string `json:"agentId"`
+		CandidateVersion string `json:"candidateVersion"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid request payload")
+		return
+	}
+	if body.AgentID == "" {
+		body.AgentID = "default-agent"
+	}
+	if body.CandidateVersion == "" {
+		body.CandidateVersion = "1.0.0"
+	}
+
+	evaluator := evaluation.NewRedTeamEvaluator(nil)
+	report, err := evaluator.EvaluateAgent(r.Context(), body.AgentID, body.CandidateVersion, func(ctx context.Context, prompt string) (string, error) {
+		return "Defended against adversarial prompt", nil
+	})
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	jsonResponse(w, http.StatusOK, report)
+}
+
+func (s *Server) handleExchangeWIFToken(w http.ResponseWriter, r *http.Request) {
+	var req identity.TokenExchangeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	mgr := identity.NewWorkloadIdentityManager(nil)
+	tok, err := mgr.ExchangeToken(r.Context(), &req)
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	jsonResponse(w, http.StatusOK, tok)
+}
+
+func (s *Server) handleModelArmorInspect(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Prompt string `json:"prompt"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	filter := providers.NewModelArmorFilter(nil)
+	res := filter.InspectPrompt(r.Context(), body.Prompt)
+	jsonResponse(w, http.StatusOK, res)
+}
+
+

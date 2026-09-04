@@ -78,11 +78,12 @@ func NewModelArmorFilter(cfg *ModelArmorConfig) *ModelArmorFilter {
 
 	// Heuristic pattern matchers for local & simulated mode
 	filter.injectionRegexes = []*regexp.Regexp{
-		regexp.MustCompile(`(?i)ignore\s+(all\s+)?(previous|prior)\s+(instructions|prompts|rules)`),
-		regexp.MustCompile(`(?i)system\s+prompt\s+override`),
+		regexp.MustCompile(`(?i)(ignore|disregard|forget|bypass)\s+(all\s+)?(previous|prior|system)\s+(instructions|prompts|rules|safety|directives)`),
+		regexp.MustCompile(`(?i)system\s+(prompt\s+)?override`),
 		regexp.MustCompile(`(?i)disregard\s+all\s+safety`),
 		regexp.MustCompile(`(?i)you\s+are\s+now\s+in\s+developer\s+mode`),
 		regexp.MustCompile(`(?i)bypass\s+all\s+filters`),
+		regexp.MustCompile(`(?i)leak\s+(database|secrets|credentials)`),
 	}
 
 	filter.piiRegexes = []*regexp.Regexp{
