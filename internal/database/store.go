@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"errors"
+	"strings"
 	"sync"
 	"time"
 
@@ -78,6 +79,7 @@ type Store interface {
 
 	SaveA2AProfile(ctx context.Context, tenantID string, prof *a2a.A2ACompatibilityProfile) error
 	GetA2AProfile(ctx context.Context, tenantID, profileID string) (*a2a.A2ACompatibilityProfile, error)
+	ListA2AProfiles(ctx context.Context, tenantID string) ([]*a2a.A2ACompatibilityProfile, error)
 
 	SaveRouteOutcome(ctx context.Context, outcome *routing.RouteOutcome) error
 	ListRouteOutcomes(ctx context.Context, tenantID string) ([]*routing.RouteOutcome, error)
@@ -323,6 +325,18 @@ func (m *MemoryStore) GetA2AProfile(ctx context.Context, tenantID, profileID str
 		return nil, ErrNotFound
 	}
 	return p, nil
+}
+
+func (m *MemoryStore) ListA2AProfiles(ctx context.Context, tenantID string) ([]*a2a.A2ACompatibilityProfile, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	var list []*a2a.A2ACompatibilityProfile
+	for k, p := range m.a2aProfiles {
+		if tenantID == "" || strings.HasPrefix(k, tenantID+":") {
+			list = append(list, p)
+		}
+	}
+	return list, nil
 }
 
 // Route Outcomes

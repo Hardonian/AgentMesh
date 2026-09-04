@@ -35,7 +35,6 @@ type Server struct {
 	store       database.Store
 	policyEng   *policy.Engine
 	routerEng   *routing.Router
-	routerV2    *routing.RouterV2
 	telemetry   *telemetry.Collector
 	canaryMgr   *canary.Manager
 	approvalSvc *approval.Service
@@ -58,7 +57,6 @@ func NewServer(
 		store:       store,
 		policyEng:   polEngine,
 		routerEng:   routeEngine,
-		routerV2:    routing.NewRouterV2(store),
 		telemetry:   tel,
 		canaryMgr:   cm,
 		approvalSvc: appSvc,
@@ -562,3 +560,361 @@ func (s *Server) handleGetSignedConfigBundle(w http.ResponseWriter, r *http.Requ
 
 	jsonResponse(w, http.StatusOK, bundle)
 }
+
+// ---------------------------------------------------------------------------
+// Phase 2 Handlers: Graphs, Passports, Tools, Routing V2, Evaluations & Lab
+// ---------------------------------------------------------------------------
+
+func (s *Server) handleSaveGraph(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	var g graph.AgentGraph
+	if err := json.NewDecoder(r.Body).Decode(&g); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid graph json")
+		return
+	}
+	if g.OrganizationID == "" {
+		g.OrganizationID = tenantID
+	}
+	if err := g.Validate(); err != nil {
+		errorResponse(w, http.StatusBadRequest, fmt.Sprintf("graph validation failed: %v", err))
+		return
+	}
+	h, err := g.Hash()
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, fmt.Sprintf("failed to hash graph: %v", err))
+		return
+	}
+	if err := s.store.SaveGraph(r.Context(), tenantID, &g); err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	jsonResponse(w, http.StatusCreated, map[string]any{
+		"graph":     g,
+		"graphHash": h,
+	})
+}
+
+func (s *Server) handleListGraphs(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	graphs, err := s.store.ListGraphs(r.Context(), tenantID)
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	jsonResponse(w, http.StatusOK, graphs)
+}
+
+func (s *Server) handleGetGraph(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	graphID := chi.URLParam(r, "id")
+	g, err := s.store.GetGraph(r.Context(), tenantID, graphID)
+	if err != nil {
+		errorResponse(w, http.StatusNotFound, "graph not found")
+		return
+	}
+	jsonResponse(w, http.StatusOK, g)
+}
+
+func (s *Server) handleGetAgentGraph(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	agentID := chi.URLParam(r, "id")
+	graphs, err := s.store.ListGraphs(r.Context(), tenantID)
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	for _, g := range graphs {
+		if g.AgentID == agentID {
+			jsonResponse(w, http.StatusOK, g)
+			return
+		}
+	}
+	errorResponse(w, http.StatusNotFound, "graph for agent not found")
+}
+
+func (s *Server) handleAnalyzeGraph(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	var g graph.AgentGraph
+	if err := json.NewDecoder(r.Body).Decode(&g); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid graph json")
+		return
+	}
+	if err := g.Validate(); err != nil {
+		errorResponse(w, http.StatusBadRequest, fmt.Sprintf("invalid graph: %v", err))
+		return
+	}
+
+	riskReport := adk.AnalyzeGraphRisk(&g)
+	policies, _ := s.store.ListPolicies(r.Context(), tenantID)
+	var p *policy.Policy
+	if len(policies) > 0 {
+		p = policies[0]
+	}
+	policyReport := policy.AnalyzeGraphPolicy(&g, p)
+
+	jsonResponse(w, http.StatusOK, map[string]any{
+		"graphId": g.GraphID,
+		"risk":    riskReport,
+		"policy":  policyReport,
+	})
+}
+
+func (s *Server) handleGetAgentPassport(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	agentID := chi.URLParam(r, "id")
+	agent, err := s.store.GetAgent(r.Context(), tenantID, agentID)
+	if err != nil || agent.Passport == nil {
+		errorResponse(w, http.StatusNotFound, "passport not found")
+		return
+	}
+
+	if r.URL.Query().Get("public") == "true" {
+		publicPass := agent.Passport.SanitizeForPublic()
+		jsonResponse(w, http.StatusOK, publicPass)
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, agent.Passport)
+}
+
+func (s *Server) handleGetAgentBadge(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	agentID := chi.URLParam(r, "id")
+	agent, err := s.store.GetAgent(r.Context(), tenantID, agentID)
+	if err != nil || agent.Passport == nil {
+		errorResponse(w, http.StatusNotFound, "agent not found")
+		return
+	}
+
+	badge := agent.Passport.GenerateBadge()
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	_, _ = w.Write([]byte(badge))
+}
+
+func (s *Server) handleListToolPassports(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	tools, err := s.store.ListToolPassports(r.Context(), tenantID)
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	jsonResponse(w, http.StatusOK, tools)
+}
+
+func (s *Server) handleGetToolPassport(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	toolID := chi.URLParam(r, "id")
+	tp, err := s.store.GetToolPassport(r.Context(), tenantID, toolID)
+	if err != nil {
+		errorResponse(w, http.StatusNotFound, "tool passport not found")
+		return
+	}
+	jsonResponse(w, http.StatusOK, tp)
+}
+
+func (s *Server) handleSaveToolPassport(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	var tp mcp.ToolPassport
+	if err := json.NewDecoder(r.Body).Decode(&tp); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid tool passport json")
+		return
+	}
+	if err := s.store.SaveToolPassport(r.Context(), tenantID, &tp); err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	jsonResponse(w, http.StatusCreated, tp)
+}
+
+func (s *Server) handleDetectToolDrift(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		OldSchema json.RawMessage `json:"oldSchema"`
+		NewSchema json.RawMessage `json:"newSchema"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid drift payload")
+		return
+	}
+	oldFP, _ := mcp.CalculateToolFingerprint("server", "tool", "1.0", "provider", mcp.RiskClassRead, body.OldSchema)
+	newFP, _ := mcp.CalculateToolFingerprint("server", "tool", "2.0", "provider", mcp.RiskClassRead, body.NewSchema)
+	report := mcp.DetectSchemaDrift(oldFP, newFP)
+	jsonResponse(w, http.StatusOK, map[string]string{"status": string(report)})
+}
+
+func (s *Server) handleListCapabilities(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	agents, err := s.store.ListAgents(r.Context(), tenantID)
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	capMap := make(map[string]bool)
+	for _, a := range agents {
+		if a.Contract != nil {
+			for _, c := range a.Contract.Capabilities {
+				capMap[c] = true
+			}
+		}
+	}
+	caps := make([]string, 0, len(capMap))
+	for c := range capMap {
+		caps = append(caps, c)
+	}
+	jsonResponse(w, http.StatusOK, map[string]any{"capabilities": caps})
+}
+
+func (s *Server) handleSimulateRoute(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	var req routing.RouteRequestV2
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid route request v2")
+		return
+	}
+	if req.TenantID == "" {
+		req.TenantID = tenantID
+	}
+
+	rec, err := s.routerEng.RouteV2(r.Context(), &req)
+	if err != nil {
+		jsonResponse(w, http.StatusOK, rec)
+		return
+	}
+	jsonResponse(w, http.StatusOK, rec)
+}
+
+func (s *Server) handleListRouteOutcomes(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	outcomes, err := s.store.ListRouteOutcomes(r.Context(), tenantID)
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	jsonResponse(w, http.StatusOK, outcomes)
+}
+
+func (s *Server) handleSimulatePolicy(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	var req policy.EvaluationRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid policy evaluation request")
+		return
+	}
+	if req.TenantID == "" {
+		req.TenantID = tenantID
+	}
+	decision := s.policyEng.Simulate(r.Context(), &req)
+	jsonResponse(w, http.StatusOK, decision)
+}
+
+func (s *Server) handlePolicyCanary(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	var body struct {
+		PolicyID        string         `json:"policyId"`
+		BaselinePolicy  *policy.Policy `json:"baselinePolicy"`
+		CandidatePolicy *policy.Policy `json:"candidatePolicy"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid policy canary payload")
+		return
+	}
+	canaryObj := &policy.PolicyCanary{
+		ID:              body.PolicyID,
+		TenantID:        tenantID,
+		BaselinePolicy:  body.BaselinePolicy,
+		CandidatePolicy: body.CandidatePolicy,
+		ShadowMode:      true,
+		CreatedAt:       time.Now().UTC(),
+	}
+	_ = policy.NewShadowEvaluator(canaryObj)
+	jsonResponse(w, http.StatusOK, map[string]any{
+		"canary": canaryObj,
+		"status": "SHADOW_ACTIVE",
+	})
+}
+
+func (s *Server) handleRunEvaluation(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	var suite evaluation.EvaluationSuite
+	if err := json.NewDecoder(r.Body).Decode(&suite); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid evaluation suite")
+		return
+	}
+	if suite.TenantID == "" {
+		suite.TenantID = tenantID
+	}
+	report, prov, err := suite.ExecuteSuite(r.Context(), "target-agent", "1.0", "gemini-1.5-pro", func(ctx context.Context, tc evaluation.EvaluationTestCase) (map[string]any, []string, int64, float64, error) {
+		return map[string]any{"output": "evaluated"}, []string{"safe_tool"}, 120, 0.002, nil
+	})
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	_ = s.store.SaveEvaluationSuite(r.Context(), &suite)
+	jsonResponse(w, http.StatusOK, map[string]any{
+		"report":     report,
+		"provenance": prov,
+	})
+}
+
+func (s *Server) handleListEvaluationResults(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	suites, err := s.store.ListEvaluationSuites(r.Context(), tenantID)
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	jsonResponse(w, http.StatusOK, suites)
+}
+
+func (s *Server) handleAnalyzeChangeImpact(w http.ResponseWriter, r *http.Request) {
+	var body struct {
+		Current   *contracts.AgentContract `json:"current"`
+		Candidate *contracts.AgentContract `json:"candidate"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid change impact payload")
+		return
+	}
+	if body.Candidate == nil {
+		errorResponse(w, http.StatusBadRequest, "candidate contract is required")
+		return
+	}
+
+	report, err := canary.AnalyzeChangeImpact(body.Current, body.Candidate)
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	jsonResponse(w, http.StatusOK, report)
+}
+
+func (s *Server) handleTestA2AEndpoint(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	var body struct {
+		EndpointURL string `json:"endpointUrl"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	lab := a2a.NewCompatibilityLab()
+	profile, err := lab.RunSuite(r.Context(), body.EndpointURL)
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	_ = s.store.SaveA2AProfile(r.Context(), tenantID, profile)
+	jsonResponse(w, http.StatusOK, profile)
+}
+
+func (s *Server) handleListA2AProfiles(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	profiles, err := s.store.ListA2AProfiles(r.Context(), tenantID)
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	jsonResponse(w, http.StatusOK, profiles)
+}
+

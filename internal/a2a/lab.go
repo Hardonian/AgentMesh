@@ -268,6 +268,11 @@ func GenerateInteroperabilityMatrix() map[string]map[string]string {
 	}
 }
 
+// RunSuite runs the test suite against a remote target endpoint URL.
+func (lab *CompatibilityLab) RunSuite(ctx context.Context, endpointURL string) (*A2ACompatibilityProfile, error) {
+	return lab.TestEndpoint(ctx, "remote-agent", "1.0.0", endpointURL, nil)
+}
+
 // ToJSON serializes the compatibility profile to indented JSON.
 func (p *A2ACompatibilityProfile) ToJSON() ([]byte, error) {
 	return json.MarshalIndent(p, "", "  ")
