@@ -52,6 +52,7 @@ type Request struct {
 	ResolvedBy     string         `json:"resolvedBy,omitempty"`
 	ResolutionNote string         `json:"resolutionNote,omitempty"`
 	ApprovalToken  string         `json:"approvalToken,omitempty"` // Nonce returned to agent
+	Consumed       bool           `json:"consumed"`
 }
 
 // Service manages the lifecycle of approval requests.
@@ -156,19 +157,42 @@ func (s *Service) Resolve(requestID, reviewerID string, approve bool, note strin
 
 // ValidateApproval verifies that a presented approval token is valid and matches the exact parameters.
 func (s *Service) ValidateApproval(requestID, agentID, tool string, params map[string]any, token string) error {
+	return s.ValidateApprovalForTenant(requestID, "", agentID, tool, params, token)
+}
+
+// ValidateApprovalForTenant verifies that a presented approval token is valid, unexpired, unconsumed, and matches the exact parameters and tenant.
+func (s *Service) ValidateApprovalForTenant(requestID, tenantID, agentID, tool string, params map[string]any, token string) error {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 
+	return s.validateInternal(requestID, tenantID, agentID, tool, params, token)
+}
+
+func (s *Service) validateInternal(requestID, tenantID, agentID, tool string, params map[string]any, token string) error {
 	req, exists := s.requests[requestID]
 	if !exists {
 		return ErrApprovalNotFound
+	}
+
+	if tenantID != "" && req.TenantID != "" && req.TenantID != tenantID {
+		return ErrApprovalTenantMismatch
+	}
+
+	now := time.Now().UTC()
+	if now.After(req.ExpiresAt) {
+		req.Status = StatusExpired
+		return ErrApprovalExpired
+	}
+
+	if req.Consumed {
+		return ErrApprovalConsumed
 	}
 
 	if req.Status != StatusApproved {
 		return fmt.Errorf("request is not approved: %s", req.Status)
 	}
 
-	if req.ApprovalToken != token {
+	if subtle.ConstantTimeCompare([]byte(req.ApprovalToken), []byte(token)) != 1 {
 		return errors.New("invalid approval token")
 	}
 
@@ -187,6 +211,20 @@ func (s *Service) ValidateApproval(requestID, agentID, tool string, params map[s
 			ErrApprovalTampered, req.ParametersHash, currentHash)
 	}
 
+	return nil
+}
+
+// ConsumeApproval validates the approval token and marks it consumed, preventing replay.
+func (s *Service) ConsumeApproval(requestID, tenantID, agentID, tool string, params map[string]any, token string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if err := s.validateInternal(requestID, tenantID, agentID, tool, params, token); err != nil {
+		return err
+	}
+
+	req := s.requests[requestID]
+	req.Consumed = true
 	return nil
 }
 

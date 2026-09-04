@@ -53,4 +53,29 @@ func TestApprovalWorkflow(t *testing.T) {
 	if !errors.Is(err, approval.ErrApprovalTampered) {
 		t.Errorf("expected ErrApprovalTampered on altered parameters, got: %v", err)
 	}
+
+	// 5. Tenant Isolation: Foreign tenant MUST NOT be able to use approval
+	err = svc.ValidateApprovalForTenant(req.ID, "tenant_hostile", "procurement-agent", "internal.erp.payment", params, resolved.ApprovalToken)
+	if !errors.Is(err, approval.ErrApprovalTenantMismatch) {
+		t.Errorf("expected ErrApprovalTenantMismatch for foreign tenant, got: %v", err)
+	}
+
+	// 6. Replay Prevention: Once consumed, token cannot be re-used
+	err = svc.ConsumeApproval(req.ID, "tenant_acme", "procurement-agent", "internal.erp.payment", params, resolved.ApprovalToken)
+	if err != nil {
+		t.Fatalf("first consumption should succeed, got: %v", err)
+	}
+	err = svc.ConsumeApproval(req.ID, "tenant_acme", "procurement-agent", "internal.erp.payment", params, resolved.ApprovalToken)
+	if !errors.Is(err, approval.ErrApprovalConsumed) {
+		t.Errorf("expected ErrApprovalConsumed on token reuse, got: %v", err)
+	}
+
+	// 7. Expiration Invariant: Expired approval must be rejected
+	expiredReq, _ := svc.CreateRequest("tenant_acme", "agent-x", "tool-x", "execute", nil, "pol_1", "v1", "Test Expire", 1*time.Millisecond)
+	resolvedExp, _ := svc.Resolve(expiredReq.ID, "reviewer", true, "ok")
+	time.Sleep(5 * time.Millisecond) // Let TTL expire
+	err = svc.ValidateApproval(expiredReq.ID, "agent-x", "tool-x", nil, resolvedExp.ApprovalToken)
+	if !errors.Is(err, approval.ErrApprovalExpired) {
+		t.Errorf("expected ErrApprovalExpired for expired token, got: %v", err)
+	}
 }

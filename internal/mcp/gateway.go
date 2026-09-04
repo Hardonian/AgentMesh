@@ -197,8 +197,8 @@ func (g *Gateway) executeToolCall(ctx context.Context, reqID any, tenantID, agen
 				}
 			}
 
-			// Validate provided token against clean arguments
-			if err := g.approvalSvc.ValidateApproval(requestID, agentID, params.Name, cleanArgs, approvalToken); err != nil {
+			// Validate and consume provided token against tenant and clean arguments
+			if err := g.approvalSvc.ConsumeApproval(requestID, tenantID, agentID, params.Name, cleanArgs, approvalToken); err != nil {
 				return &protocol.JSONRPCResponse{
 					JSONRPC: "2.0",
 					ID:      reqID,
