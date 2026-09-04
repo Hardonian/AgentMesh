@@ -18,6 +18,7 @@ import (
 	"github.com/agentmesh/agentmesh/internal/identity"
 	"github.com/agentmesh/agentmesh/internal/mcp"
 	"github.com/agentmesh/agentmesh/internal/policy"
+	"github.com/agentmesh/agentmesh/internal/providers"
 	"github.com/agentmesh/agentmesh/internal/routing"
 	"github.com/agentmesh/agentmesh/internal/telemetry"
 	"github.com/agentmesh/agentmesh/pkg/contracts"
@@ -176,6 +177,12 @@ func (s *Server) setupRoutes() {
 		// A2A Compatibility Lab (Phase 2)
 		api.Post("/a2a/test", s.handleTestA2AEndpoint)
 		api.Get("/a2a/profiles", s.handleListA2AProfiles)
+
+		// High-Impact Strategic Extensions
+		api.Get("/a2a/registry", s.handleGetA2ARegistry)
+		api.Post("/evaluations/redteam", s.handleRunRedTeamEvaluation)
+		api.Post("/auth/wif/token", s.handleExchangeWIFToken)
+		api.Post("/providers/armor/inspect", s.handleModelArmorInspect)
 	})
 }
 

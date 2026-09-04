@@ -40,6 +40,8 @@ type RouteRequestV2 struct {
 	DataClassification string                 `json:"dataClassification,omitempty"`
 	AllowedModels      []string               `json:"allowedModels,omitempty"`
 	TargetRegion       string                 `json:"targetRegion,omitempty"`
+	CallerRegion       string                 `json:"callerRegion,omitempty"`
+	AllowedRegions     []string               `json:"allowedRegions,omitempty"`
 	Strategy           Strategy               `json:"strategy"`
 	MaxLatencyMs       int64                  `json:"maxLatencyMs,omitempty"`
 	MaxCostUSD         float64                `json:"maxCostUsd,omitempty"`
@@ -227,7 +229,17 @@ func (r *Router) RouteV2(ctx context.Context, req *RouteRequestV2) (*RouteDecisi
 			continue
 		}
 
-		// 7. Policy Engine Pre-Evaluation Check
+		// 7. Data Residency Filter
+		if len(req.AllowedRegions) > 0 {
+			if ok, reason := ValidateDataResidency(cand.Region, req.AllowedRegions); !ok {
+				exp.Eligible = false
+				exp.DisqualificationReason = reason
+				candidateExps = append(candidateExps, exp)
+				continue
+			}
+		}
+
+		// 8. Policy Engine Pre-Evaluation Check
 		if r.policyEngine != nil {
 			evalDec := r.policyEngine.Evaluate(ctx, &policy.EvaluationRequest{
 				TenantID:       req.TenantID,
@@ -244,9 +256,16 @@ func (r *Router) RouteV2(ctx context.Context, req *RouteRequestV2) (*RouteDecisi
 			}
 		}
 
-		// Calculate composite score based on strategy
-		exp.CompositeScore = calculateStrategyScore(cand, req.Strategy)
-		eligibleCandidates = append(eligibleCandidates, cand)
+		// Calculate composite score based on strategy with regional latency penalty
+		scoredCandidate := cand
+		if req.CallerRegion != "" && cand.Region != "" {
+			penalty := EstimateRegionalLatencyPenalty(req.CallerRegion, cand.Region)
+			scoredCandidate.P95LatencyMs += penalty
+			exp.P95LatencyMs = scoredCandidate.P95LatencyMs
+		}
+
+		exp.CompositeScore = calculateStrategyScore(scoredCandidate, req.Strategy)
+		eligibleCandidates = append(eligibleCandidates, scoredCandidate)
 		candidateExps = append(candidateExps, exp)
 	}
 

@@ -35,6 +35,7 @@ type AgentRouteCandidate struct {
 	P95LatencyMs int64
 	SuccessRate  float64
 	QualityScore float64
+	Region       string
 }
 
 // RouteRequest contains caller requirements for dispatching a task.

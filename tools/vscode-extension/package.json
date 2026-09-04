@@ -1,0 +1,63 @@
+{
+  "name": "agentmesh-vscode",
+  "displayName": "AgentMesh for Google ADK & A2A",
+  "description": "Operational intelligence, graph inspection, policy simulation, and confused deputy protection for Google ADK, A2A, and MCP agents.",
+  "version": "2.0.0",
+  "publisher": "agentmesh",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "AI",
+    "Security",
+    "Linters"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "workspaceContains:agent.yaml",
+    "workspaceContains:agentcontract.yaml",
+    "workspaceContains:*.go",
+    "onLanguage:go",
+    "onLanguage:yaml"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "agentmesh.inspectGraph",
+        "title": "AgentMesh: Inspect ADK AgentGraph",
+        "category": "AgentMesh"
+      },
+      {
+        "command": "agentmesh.simulatePolicy",
+        "title": "AgentMesh: Simulate Policy & Check Confused Deputy",
+        "category": "AgentMesh"
+      },
+      {
+        "command": "agentmesh.diagnoseAgent",
+        "title": "AgentMesh: Run Operational Diagnostics",
+        "category": "AgentMesh"
+      },
+      {
+        "command": "agentmesh.evalRedTeam",
+        "title": "AgentMesh: Run Adversarial Red-Team Evaluator",
+        "category": "AgentMesh"
+      }
+    ],
+    "configuration": {
+      "type": "object",
+      "title": "AgentMesh",
+      "properties": {
+        "agentmesh.cliPath": {
+          "type": "string",
+          "default": "agentmesh",
+          "description": "Path to the agentmesh CLI executable"
+        },
+        "agentmesh.serverUrl": {
+          "type": "string",
+          "default": "http://127.0.0.1:8080",
+          "description": "AgentMesh Control Plane URL"
+        }
+      }
+    }
+  }
+}
