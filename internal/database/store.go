@@ -426,3 +426,153 @@ func (m *MemoryStore) ListEvaluationSuites(ctx context.Context, tenantID string)
 	}
 	return list, nil
 }
+
+// Phase 3 Implementations
+
+func (m *MemoryStore) SaveRoutingOutcomeV3(ctx context.Context, outcome *routing.CanonicalRoutingOutcome) error {
+	if outcome == nil {
+		return errors.New("outcome cannot be nil")
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.routeOutcomesV3 = append(m.routeOutcomesV3, outcome)
+	return nil
+}
+
+func (m *MemoryStore) ListRoutingOutcomesV3(ctx context.Context, tenantID, capabilityID string) ([]*routing.CanonicalRoutingOutcome, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	list := make([]*routing.CanonicalRoutingOutcome, 0)
+	for _, o := range m.routeOutcomesV3 {
+		if (tenantID == "" || o.OrganizationID == tenantID) && (capabilityID == "" || o.CapabilityID == capabilityID) {
+			list = append(list, o)
+		}
+	}
+	return list, nil
+}
+
+func (m *MemoryStore) SaveTaskFingerprint(ctx context.Context, tenantID string, fp *task.TaskFingerprint) error {
+	if fp == nil || tenantID == "" {
+		return errors.New("invalid task fingerprint")
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.fingerprints[tenantID+":"+fp.FingerprintID] = fp
+	return nil
+}
+
+func (m *MemoryStore) GetTaskFingerprint(ctx context.Context, tenantID, fingerprintID string) (*task.TaskFingerprint, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	fp, ok := m.fingerprints[tenantID+":"+fingerprintID]
+	if !ok {
+		return nil, ErrNotFound
+	}
+	return fp, nil
+}
+
+func (m *MemoryStore) SaveReliabilityProfile(ctx context.Context, profile *reliability.ReliabilityProfile) error {
+	if profile == nil {
+		return errors.New("profile cannot be nil")
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.reliabilityProfiles[profile.TenantID+":"+profile.AgentID+":"+profile.CapabilityID] = profile
+	return nil
+}
+
+func (m *MemoryStore) GetReliabilityProfile(ctx context.Context, tenantID, agentID, capabilityID string) (*reliability.ReliabilityProfile, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	p, ok := m.reliabilityProfiles[tenantID+":"+agentID+":"+capabilityID]
+	if !ok {
+		return nil, ErrNotFound
+	}
+	return p, nil
+}
+
+func (m *MemoryStore) SaveAgentSLO(ctx context.Context, s *slo.AgentSLO) error {
+	if s == nil {
+		return errors.New("slo cannot be nil")
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.agentSLOs[s.TenantID+":"+s.AgentID+":"+s.CapabilityID] = s
+	return nil
+}
+
+func (m *MemoryStore) GetAgentSLO(ctx context.Context, tenantID, agentID, capabilityID string) (*slo.AgentSLO, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	s, ok := m.agentSLOs[tenantID+":"+agentID+":"+capabilityID]
+	if !ok {
+		return nil, ErrNotFound
+	}
+	return s, nil
+}
+
+func (m *MemoryStore) ListAgentSLOs(ctx context.Context, tenantID string) ([]*slo.AgentSLO, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	list := make([]*slo.AgentSLO, 0)
+	for _, s := range m.agentSLOs {
+		if tenantID == "" || s.TenantID == tenantID {
+			list = append(list, s)
+		}
+	}
+	return list, nil
+}
+
+func (m *MemoryStore) SaveProxyInstance(ctx context.Context, inst *fleet.ProxyInstance) error {
+	if inst == nil {
+		return errors.New("instance cannot be nil")
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.proxyFleet[inst.TenantID+":"+inst.InstanceID] = inst
+	return nil
+}
+
+func (m *MemoryStore) ListProxyInstances(ctx context.Context, tenantID string) ([]*fleet.ProxyInstance, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	list := make([]*fleet.ProxyInstance, 0)
+	for _, inst := range m.proxyFleet {
+		if tenantID == "" || inst.TenantID == tenantID {
+			list = append(list, inst)
+		}
+	}
+	return list, nil
+}
+
+func (m *MemoryStore) SaveRoutingModel(ctx context.Context, model *learned.RoutingModelRecord) error {
+	if model == nil {
+		return errors.New("model cannot be nil")
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.routingModels[model.TenantID+":"+model.ModelID] = model
+	return nil
+}
+
+func (m *MemoryStore) GetRoutingModel(ctx context.Context, tenantID, modelID string) (*learned.RoutingModelRecord, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	model, ok := m.routingModels[tenantID+":"+modelID]
+	if !ok {
+		return nil, ErrNotFound
+	}
+	return model, nil
+}
+
+func (m *MemoryStore) ListRoutingModels(ctx context.Context, tenantID string) ([]*learned.RoutingModelRecord, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+	list := make([]*learned.RoutingModelRecord, 0)
+	for _, model := range m.routingModels {
+		if tenantID == "" || model.TenantID == tenantID {
+			list = append(list, model)
+		}
+	}
+	return list, nil
+}

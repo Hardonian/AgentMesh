@@ -9,21 +9,30 @@ import (
 
 	"github.com/agentmesh/agentmesh/internal/a2a"
 	"github.com/agentmesh/agentmesh/internal/adk"
+	"github.com/agentmesh/agentmesh/internal/analytics"
 	"github.com/agentmesh/agentmesh/internal/approval"
 	"github.com/agentmesh/agentmesh/internal/audit"
 	"github.com/agentmesh/agentmesh/internal/canary"
 	"github.com/agentmesh/agentmesh/internal/crypto"
 	"github.com/agentmesh/agentmesh/internal/database"
 	"github.com/agentmesh/agentmesh/internal/evaluation"
+	"github.com/agentmesh/agentmesh/internal/events"
+	"github.com/agentmesh/agentmesh/internal/fleet"
 	"github.com/agentmesh/agentmesh/internal/identity"
 	"github.com/agentmesh/agentmesh/internal/mcp"
+	"github.com/agentmesh/agentmesh/internal/outcome"
 	"github.com/agentmesh/agentmesh/internal/policy"
 	"github.com/agentmesh/agentmesh/internal/providers"
+	"github.com/agentmesh/agentmesh/internal/reliability"
 	"github.com/agentmesh/agentmesh/internal/routing"
+	"github.com/agentmesh/agentmesh/internal/routing/intelligence"
+	"github.com/agentmesh/agentmesh/internal/routing/learned"
+	"github.com/agentmesh/agentmesh/internal/slo"
 	"github.com/agentmesh/agentmesh/internal/telemetry"
 	"github.com/agentmesh/agentmesh/pkg/contracts"
 	"github.com/agentmesh/agentmesh/pkg/graph"
 	"github.com/agentmesh/agentmesh/pkg/passport"
+	"github.com/agentmesh/agentmesh/pkg/task"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
@@ -32,15 +41,23 @@ import (
 
 // Server is the AgentMesh Control Plane HTTP Server.
 type Server struct {
-	router      chi.Router
-	store       database.Store
-	policyEng   *policy.Engine
-	routerEng   *routing.Router
-	telemetry   *telemetry.Collector
-	canaryMgr   *canary.Manager
-	approvalSvc *approval.Service
-	auditLogger *audit.Logger
-	signingKey  *crypto.KeyPair
+	router             chi.Router
+	store              database.Store
+	policyEng          *policy.Engine
+	routerEng          *routing.Router
+	telemetry          *telemetry.Collector
+	canaryMgr          *canary.Manager
+	approvalSvc        *approval.Service
+	auditLogger        *audit.Logger
+	signingKey         *crypto.KeyPair
+	reliabilityTracker *reliability.ReliabilityTracker
+	sloManager         *slo.Manager
+	fleetManager       *fleet.Manager
+	modelRegistry      *learned.ModelRegistry
+	analyticsExporter  *analytics.Exporter
+	eventsDispatcher   *events.Dispatcher
+	baselineRouterV1   *intelligence.BaselineRouterV1
+	outcomeGraph       *outcome.OperationalOutcomeGraph
 }
 
 func NewServer(
@@ -54,15 +71,23 @@ func NewServer(
 	keyPair *crypto.KeyPair,
 ) *Server {
 	s := &Server{
-		router:      chi.NewRouter(),
-		store:       store,
-		policyEng:   polEngine,
-		routerEng:   routeEngine,
-		telemetry:   tel,
-		canaryMgr:   cm,
-		approvalSvc: appSvc,
-		auditLogger: auditLog,
-		signingKey:  keyPair,
+		router:             chi.NewRouter(),
+		store:              store,
+		policyEng:          polEngine,
+		routerEng:          routeEngine,
+		telemetry:          tel,
+		canaryMgr:          cm,
+		approvalSvc:        appSvc,
+		auditLogger:        auditLog,
+		signingKey:         keyPair,
+		reliabilityTracker: reliability.NewReliabilityTracker(),
+		sloManager:         slo.NewManager(),
+		fleetManager:       fleet.NewManager(),
+		modelRegistry:      learned.NewModelRegistry(),
+		analyticsExporter:  analytics.NewExporter(),
+		eventsDispatcher:   events.NewDispatcher(""),
+		baselineRouterV1:   intelligence.NewBaselineRouterV1(),
+		outcomeGraph:       outcome.NewOperationalOutcomeGraph(),
 	}
 
 	s.setupRoutes()
@@ -183,6 +208,27 @@ func (s *Server) setupRoutes() {
 		api.Post("/evaluations/redteam", s.handleRunRedTeamEvaluation)
 		api.Post("/auth/wif/token", s.handleExchangeWIFToken)
 		api.Post("/providers/armor/inspect", s.handleModelArmorInspect)
+
+		// Phase 3 Operational Intelligence & Routing Extensions
+		api.Get("/routes/outcomes/v3", s.handleListRouteOutcomesV3)
+		api.Post("/routes/outcomes/v3", s.handleSaveRouteOutcomeV3)
+		api.Post("/routes/replay", s.handleRouteReplay)
+		api.Get("/routes/debug/{taskId}", s.handleRouteDebug)
+
+		api.Get("/reliability/{agentId}", s.handleGetReliability)
+		api.Get("/capabilities/{id}/health", s.handleGetCapabilityHealth)
+
+		api.Get("/slos", s.handleListSLOs)
+		api.Post("/slos", s.handleSaveSLO)
+
+		api.Get("/proxy-fleet", s.handleGetProxyFleet)
+		api.Post("/proxy-fleet/heartbeat", s.handleProxyHeartbeat)
+
+		api.Get("/routers", s.handleListRouters)
+		api.Post("/routers/shadow", s.handleSetRouterShadow)
+		api.Post("/routers/promote", s.handlePromoteRouter)
+
+		api.Post("/analytics/export/bigquery", s.handleBigQueryExport)
 	})
 }
 
@@ -999,5 +1045,282 @@ func (s *Server) handleModelArmorInspect(w http.ResponseWriter, r *http.Request)
 	res := filter.InspectPrompt(r.Context(), body.Prompt)
 	jsonResponse(w, http.StatusOK, res)
 }
+
+// Phase 3 HTTP Handlers
+
+func (s *Server) handleListRouteOutcomesV3(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	capID := r.URL.Query().Get("capability")
+	outcomes, err := s.store.ListRoutingOutcomesV3(r.Context(), tenantID, capID)
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	jsonResponse(w, http.StatusOK, outcomes)
+}
+
+func (s *Server) handleSaveRouteOutcomeV3(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	var outRec routing.CanonicalRoutingOutcome
+	if err := json.NewDecoder(r.Body).Decode(&outRec); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid routing outcome payload")
+		return
+	}
+	outRec.OrganizationID = tenantID
+	if err := outRec.Validate(); err != nil {
+		errorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err := s.store.SaveRoutingOutcomeV3(r.Context(), &outRec); err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Record in Reliability Tracker
+	prof := s.reliabilityTracker.RecordObservation(tenantID, outRec.SelectedAgentID, outRec.SelectedAgentVersion, outRec.CapabilityID, reliability.OutcomeObservation{
+		Success:     outRec.Success,
+		LatencyMs:   outRec.LatencyMs,
+		CostUSD:     outRec.Cost,
+		ToolSuccess: outRec.ToolSuccess,
+		IsTimeout:   (outRec.FailureType == routing.FailureTimeout),
+		Timestamp:   outRec.CreatedAt,
+	})
+	_ = s.store.SaveReliabilityProfile(r.Context(), prof)
+
+	// Ingest into Operational Outcome Graph
+	_ = s.outcomeGraph.AddNode(&outcome.GraphNode{
+		ID:       outRec.OutcomeID,
+		Type:     outcome.NodeProductionOutcome,
+		TenantID: tenantID,
+		Properties: map[string]any{
+			"duration_ms":  float64(outRec.LatencyMs),
+			"failure_type": string(outRec.FailureType),
+			"cost_usd":     outRec.Cost,
+			"success":      outRec.Success,
+		},
+		CreatedAt: outRec.CreatedAt,
+	})
+
+	jsonResponse(w, http.StatusCreated, map[string]string{"status": "recorded", "outcomeId": outRec.OutcomeID})
+}
+
+func (s *Server) handleRouteReplay(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	outcomes, err := s.store.ListRoutingOutcomesV3(r.Context(), tenantID, "")
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	// Build candidate pool from registered agents
+	agents, _ := s.store.ListAgents(r.Context(), tenantID)
+	candidates := make([]*intelligence.CandidateAgent, 0, len(agents))
+	for _, a := range agents {
+		cand := &intelligence.CandidateAgent{
+			AgentID:      a.ID,
+			EndpointURL:  a.EndpointURL,
+			HealthStatus: a.Status,
+		}
+		if a.Contract != nil {
+			cand.SupportedTools = a.Contract.Tools.Allow
+		}
+		candidates = append(candidates, cand)
+	}
+
+	replayer := intelligence.NewReplayEngine(s.baselineRouterV1)
+	summary, err := replayer.ReplayCorpus(r.Context(), outcomes, candidates)
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, summary)
+}
+
+func (s *Server) handleRouteDebug(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	taskID := chi.URLParam(r, "taskId")
+
+	outcomes, err := s.store.ListRoutingOutcomesV3(r.Context(), tenantID, "")
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	var matched *routing.CanonicalRoutingOutcome
+	for _, o := range outcomes {
+		if o.TaskID == taskID || o.OutcomeID == taskID {
+			matched = o
+			break
+		}
+	}
+
+	if matched == nil {
+		errorResponse(w, http.StatusNotFound, "route decision outcome not found for task")
+		return
+	}
+
+	fp := matched.RequestFeatures
+	if fp == nil {
+		fp = task.NewTaskFingerprint(matched.CapabilityID, 1024, 1024, false, nil, "INTERNAL", "us-central1", matched.LatencyMs, matched.Cost, false, nil, false)
+	}
+
+	debugReport := &intelligence.RouteDebugReport{
+		TaskID:              matched.TaskID,
+		CapabilityID:        matched.CapabilityID,
+		SelectedAgentID:     matched.SelectedAgentID,
+		Objective:           intelligence.RoutingObjective(matched.RoutingObjective),
+		AlgorithmID:         matched.RouteAlgorithmVersion,
+		PolicyVersion:       matched.PolicyVersion,
+		DecidedAt:           matched.CreatedAt,
+		DecisionExplanation: fmt.Sprintf("Decision reconstructed for task %s; selected %s with confidence %.2f", matched.TaskID, matched.SelectedAgentID, matched.RouteConfidence),
+		TaskFingerprint:     fp,
+		EvidenceSummary:     fmt.Sprintf("Reconstructed outcome: success=%t, latency=%dms, cost=$%.4f, failure=%s", matched.Success, matched.LatencyMs, matched.Cost, matched.FailureType),
+	}
+
+	jsonResponse(w, http.StatusOK, debugReport)
+}
+
+func (s *Server) handleGetReliability(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	agentID := chi.URLParam(r, "agentId")
+	capID := r.URL.Query().Get("capability")
+
+	prof, ok := s.reliabilityTracker.GetProfile(tenantID, agentID, capID)
+	if !ok {
+		// Fallback to store
+		p, err := s.store.GetReliabilityProfile(r.Context(), tenantID, agentID, capID)
+		if err != nil {
+			errorResponse(w, http.StatusNotFound, "reliability profile not found")
+			return
+		}
+		jsonResponse(w, http.StatusOK, p)
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, prof)
+}
+
+func (s *Server) handleGetCapabilityHealth(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	capID := chi.URLParam(r, "id")
+
+	agents, _ := s.store.ListAgents(r.Context(), tenantID)
+	profiles := make([]*reliability.ReliabilityProfile, 0)
+	for _, a := range agents {
+		if p, ok := s.reliabilityTracker.GetProfile(tenantID, a.ID, capID); ok {
+			profiles = append(profiles, p)
+		}
+	}
+
+	ch := s.sloManager.ComputeCapabilityHealth(tenantID, capID, profiles)
+	jsonResponse(w, http.StatusOK, ch)
+}
+
+func (s *Server) handleListSLOs(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	slos := s.sloManager.ListSLOs(tenantID)
+	jsonResponse(w, http.StatusOK, slos)
+}
+
+func (s *Server) handleSaveSLO(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	var newSLO slo.AgentSLO
+	if err := json.NewDecoder(r.Body).Decode(&newSLO); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid slo payload")
+		return
+	}
+	newSLO.TenantID = tenantID
+	if err := s.sloManager.SetSLO(&newSLO); err != nil {
+		errorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	_ = s.store.SaveAgentSLO(r.Context(), &newSLO)
+	jsonResponse(w, http.StatusCreated, newSLO)
+}
+
+func (s *Server) handleGetProxyFleet(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	summary := s.fleetManager.GetFleetSummary(tenantID)
+	jsonResponse(w, http.StatusOK, summary)
+}
+
+func (s *Server) handleProxyHeartbeat(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	var inst fleet.ProxyInstance
+	if err := json.NewDecoder(r.Body).Decode(&inst); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid heartbeat payload")
+		return
+	}
+	inst.TenantID = tenantID
+	if err := s.fleetManager.RegisterHeartbeat(&inst); err != nil {
+		errorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+	_ = s.store.SaveProxyInstance(r.Context(), &inst)
+	jsonResponse(w, http.StatusOK, map[string]string{"status": "heartbeat_acknowledged"})
+}
+
+func (s *Server) handleListRouters(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	models := s.modelRegistry.ListModels(tenantID)
+	jsonResponse(w, http.StatusOK, models)
+}
+
+func (s *Server) handleSetRouterShadow(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	var body struct {
+		ModelID string `json:"modelId"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	if err := s.modelRegistry.SetShadow(tenantID, body.ModelID); err != nil {
+		errorResponse(w, http.StatusNotFound, err.Error())
+		return
+	}
+	jsonResponse(w, http.StatusOK, map[string]string{"status": "shadow_mode_enabled", "modelId": body.ModelID})
+}
+
+func (s *Server) handlePromoteRouter(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	var body struct {
+		ModelID string `json:"modelId"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+		errorResponse(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+	if err := s.modelRegistry.Promote(tenantID, body.ModelID); err != nil {
+		errorResponse(w, http.StatusNotFound, err.Error())
+		return
+	}
+	jsonResponse(w, http.StatusOK, map[string]string{"status": "promoted_to_active", "modelId": body.ModelID})
+}
+
+func (s *Server) handleBigQueryExport(w http.ResponseWriter, r *http.Request) {
+	tenantID := getTenantID(r)
+	var body struct {
+		GCPProject string `json:"gcpProject"`
+	}
+	_ = json.NewDecoder(r.Body).Decode(&body)
+
+	outcomes, err := s.store.ListRoutingOutcomesV3(r.Context(), tenantID, "")
+	if err != nil {
+		errorResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	batch, err := s.analyticsExporter.ExportBatch(r.Context(), tenantID, body.GCPProject, outcomes)
+	if err != nil {
+		errorResponse(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	jsonResponse(w, http.StatusOK, batch)
+}
+
 
 

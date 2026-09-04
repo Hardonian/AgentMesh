@@ -64,6 +64,36 @@ func NewAgentMeshMCPServer(tenantID string, dispatch func(ctx context.Context, t
 				Description: "Get risk classification, fingerprint, and schema drift status for an MCP tool.",
 				InputSchema: json.RawMessage(`{"type":"object","properties":{"toolName":{"type":"string"}},"required":["toolName"]}`),
 			},
+			{
+				Name:        "explain_route",
+				Description: "Reconstruct and explain candidate eligibility, scoring, and reasons for a routing decision.",
+				InputSchema: json.RawMessage(`{"type":"object","properties":{"taskId":{"type":"string"}},"required":["taskId"]}`),
+			},
+			{
+				Name:        "get_reliability",
+				Description: "Retrieve statistical rolling reliability profile and P50/P95 latency percentiles for an agent.",
+				InputSchema: json.RawMessage(`{"type":"object","properties":{"agentId":{"type":"string"},"capabilityId":{"type":"string"}},"required":["agentId"]}`),
+			},
+			{
+				Name:        "get_capability_health",
+				Description: "Retrieve aggregated operational health status and SLO compliance across agents supporting a capability.",
+				InputSchema: json.RawMessage(`{"type":"object","properties":{"capabilityId":{"type":"string"}},"required":["capabilityId"]}`),
+			},
+			{
+				Name:        "get_slo_status",
+				Description: "Evaluate and return AgentSLO compliance status and remaining error budget.",
+				InputSchema: json.RawMessage(`{"type":"object","properties":{"agentId":{"type":"string"},"capabilityId":{"type":"string"}},"required":["agentId"]}`),
+			},
+			{
+				Name:        "compare_agents",
+				Description: "Compare two agents on empirical reliability, cost efficiency, and latency.",
+				InputSchema: json.RawMessage(`{"type":"object","properties":{"agentA":{"type":"string"},"agentB":{"type":"string"},"capabilityId":{"type":"string"}},"required":["agentA","agentB"]}`),
+			},
+			{
+				Name:        "get_route_history",
+				Description: "Retrieve recent canonical routing outcomes and failure taxonomy events.",
+				InputSchema: json.RawMessage(`{"type":"object","properties":{"capabilityId":{"type":"string"},"limit":{"type":"integer"}},"required":[]}`),
+			},
 		},
 	}
 	return server

@@ -71,6 +71,12 @@ reliability, and progressive delivery for production AI agent systems.`,
 	rootCmd.AddCommand(diagnoseCmd())
 	rootCmd.AddCommand(authCmd())
 
+	// Phase 3 Subcommands
+	rootCmd.AddCommand(reliabilityCmd())
+	rootCmd.AddCommand(routerCmd())
+	rootCmd.AddCommand(sloCmd())
+	rootCmd.AddCommand(proxyFleetCmd())
+
 	if err := rootCmd.Execute(); err != nil {
 		os.Exit(1)
 	}
@@ -480,6 +486,59 @@ func routeCmd() *cobra.Command {
 			var res map[string]any
 			_ = json.NewDecoder(resp.Body).Decode(&res)
 			out, _ := json.MarshalIndent(res, "", "  ")
+			fmt.Println(string(out))
+			return nil
+		},
+	})
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "replay [file]",
+		Short: "Replay historical routing tasks against candidate router to compute regret and lift",
+		Args:  cobra.MaximumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			resp, err := http.Post(serverURL+"/api/v1/routes/replay", "application/json", bytes.NewReader([]byte("{}")))
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+			var summary map[string]any
+			_ = json.NewDecoder(resp.Body).Decode(&summary)
+			out, _ := json.MarshalIndent(summary, "", "  ")
+			fmt.Println(string(out))
+			return nil
+		},
+	})
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "history",
+		Short: "Display recent canonical routing outcomes and failure taxonomy events",
+		RunE: func(cmd *cobra.Command, args []string) error {
+			resp, err := http.Get(serverURL + "/api/v1/routes/outcomes/v3")
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+			var outcomes []any
+			_ = json.NewDecoder(resp.Body).Decode(&outcomes)
+			out, _ := json.MarshalIndent(outcomes, "", "  ")
+			fmt.Println(string(out))
+			return nil
+		},
+	})
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "debug [task-id]",
+		Short: "Debug a specific task routing decision with full candidate and policy reconstruction",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			resp, err := http.Get(serverURL + "/api/v1/routes/debug/" + args[0])
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+			var report map[string]any
+			_ = json.NewDecoder(resp.Body).Decode(&report)
+			out, _ := json.MarshalIndent(report, "", "  ")
 			fmt.Println(string(out))
 			return nil
 		},
@@ -900,6 +959,24 @@ func capabilityCmd() *cobra.Command {
 			fmt.Printf("Testing capability %q on agent %q...\n", args[1], args[0])
 			time.Sleep(200 * time.Millisecond)
 			fmt.Printf("✓ Capability %q verified: EVALUATED_CAPABILITY (Confidence: 0.94)\n", args[1])
+			return nil
+		},
+	})
+
+	cmd.AddCommand(&cobra.Command{
+		Use:   "health [capability-id]",
+		Short: "Inspect aggregated operational health and SLO status for a capability",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			resp, err := http.Get(serverURL + "/api/v1/capabilities/" + args[0] + "/health")
+			if err != nil {
+				return err
+			}
+			defer resp.Body.Close()
+			var ch map[string]any
+			_ = json.NewDecoder(resp.Body).Decode(&ch)
+			out, _ := json.MarshalIndent(ch, "", "  ")
+			fmt.Println(string(out))
 			return nil
 		},
 	})
