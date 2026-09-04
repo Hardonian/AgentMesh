@@ -10,7 +10,9 @@ import {
   CheckSquare, 
   History, 
   KeyRound,
-  Layers
+  Layers,
+  GitFork,
+  Cpu
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -21,15 +23,13 @@ export default function DashboardLayout({
   const navItems = [
     { label: "Overview", href: "/dashboard", icon: LayoutDashboard },
     { label: "Agents & Passports", href: "/dashboard/agents", icon: Bot },
-    { label: "Agent Contracts", href: "/dashboard/contracts", icon: FileCode },
-    { label: "Tools & MCPGuard", href: "/dashboard/tools", icon: Wrench },
-    { label: "Policy Studio", href: "/dashboard/policies", icon: ShieldCheck },
-    { label: "Capability Routing", href: "/dashboard/routes", icon: GitBranch },
-    { label: "Waterfall Traces", href: "/dashboard/traces", icon: Activity },
-    { label: "Approvals Inbox", href: "/dashboard/approvals", icon: CheckSquare },
+    { label: "ADK Agent Graphs", href: "/dashboard/graphs", icon: GitFork },
+    { label: "Capabilities & Routing", href: "/dashboard/capabilities", icon: GitBranch },
+    { label: "Tools & MCP Passports", href: "/dashboard/tools", icon: Wrench },
     { label: "Canaries & Rollouts", href: "/dashboard/canaries", icon: Layers },
-    { label: "Audit Trail", href: "/dashboard/audit", icon: History },
-    { label: "API Credentials", href: "/dashboard/settings", icon: KeyRound },
+    { label: "Approvals Inbox", href: "/dashboard/approvals", icon: CheckSquare },
+    { label: "Waterfall Traces", href: "/dashboard/traces", icon: Activity },
+    { label: "Google Architecture", href: "/google", icon: Cpu },
   ];
 
   return (

@@ -43,8 +43,18 @@ func AnalyzeGraphPolicy(g *graph.AgentGraph, p *Policy) *GraphPolicyReport {
 
 	engine := NewEngine([]*Policy{p})
 
-	// 1. Check direct tools declared by graph
+	// 1. Check direct tools declared by graph and tool nodes
+	toolMap := make(map[string]bool)
 	for _, tool := range g.Tools {
+		toolMap[tool] = true
+	}
+	for _, node := range g.Nodes {
+		if node.Type == graph.NodeTypeTool && node.Target != "" {
+			toolMap[node.Target] = true
+		}
+	}
+
+	for tool := range toolMap {
 		req := &EvaluationRequest{
 			TenantID:       g.OrganizationID,
 			SubjectAgentID: g.AgentID,
@@ -57,17 +67,16 @@ func AnalyzeGraphPolicy(g *graph.AgentGraph, p *Policy) *GraphPolicyReport {
 			report.Findings = append(report.Findings, GraphPolicyFinding{
 				Severity:    "ERROR",
 				Category:    "FORBIDDEN_TOOL",
-				Description: fmt.Sprintf("Graph node references tool %q explicitly denied by policy: %s", tool, dec.Reason),
+				Description: fmt.Sprintf("Graph references tool %q explicitly denied by policy for agent %s: %s", tool, g.AgentID, dec.Reason),
 				Remediation: "Remove the tool from graph definition or update policy allow rules.",
 			})
 		}
 	}
 
 	// 2. Check delegations and Indirect Privilege Escalation
-	// Example: CEO -> Finance -> Research -> Gmail Send
+	// Example: Finance -> Research -> Gmail Send
 	// If root agent is barred from Gmail Send, any downstream reachable tool that root cannot execute is flagged.
 	for _, delegate := range g.Delegations {
-		// Verify if delegation to target is allowed
 		delReq := &EvaluationRequest{
 			TenantID:       g.OrganizationID,
 			SubjectAgentID: g.AgentID,
@@ -87,7 +96,22 @@ func AnalyzeGraphPolicy(g *graph.AgentGraph, p *Policy) *GraphPolicyReport {
 		}
 	}
 
-	// 3. Approval coverage verification
+	// 3. Detect cycles in graph (which represent unbounded delegation or execution loops)
+	cycles := g.FindCycles()
+	if len(cycles) > 0 {
+		report.Compliant = false
+		for _, cycle := range cycles {
+			report.Findings = append(report.Findings, GraphPolicyFinding{
+				Severity:    "ERROR",
+				Category:    "CYCLE_DETECTED",
+				Description: fmt.Sprintf("Graph contains cyclic dependency loop: %s", strings.Join(cycle, " -> ")),
+				Path:        strings.Join(cycle, " -> "),
+				Remediation: "Break recursive delegation cycle or introduce bounded execution guard.",
+			})
+		}
+	}
+
+	// 4. Approval coverage verification for tool nodes
 	for _, node := range g.Nodes {
 		if node.Type == graph.NodeTypeTool {
 			req := &EvaluationRequest{
