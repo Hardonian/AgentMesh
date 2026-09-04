@@ -12,13 +12,18 @@ import (
 	"github.com/agentmesh/agentmesh/internal/audit"
 	"github.com/agentmesh/agentmesh/internal/canary"
 	"github.com/agentmesh/agentmesh/internal/evaluation"
+	"github.com/agentmesh/agentmesh/internal/fleet"
 	"github.com/agentmesh/agentmesh/internal/identity"
 	"github.com/agentmesh/agentmesh/internal/mcp"
 	"github.com/agentmesh/agentmesh/internal/policy"
+	"github.com/agentmesh/agentmesh/internal/reliability"
 	"github.com/agentmesh/agentmesh/internal/routing"
+	"github.com/agentmesh/agentmesh/internal/routing/learned"
+	"github.com/agentmesh/agentmesh/internal/slo"
 	"github.com/agentmesh/agentmesh/pkg/contracts"
 	"github.com/agentmesh/agentmesh/pkg/graph"
 	"github.com/agentmesh/agentmesh/pkg/passport"
+	"github.com/agentmesh/agentmesh/pkg/task"
 )
 
 var (
@@ -87,6 +92,27 @@ type Store interface {
 	SaveEvaluationSuite(ctx context.Context, suite *evaluation.EvaluationSuite) error
 	GetEvaluationSuite(ctx context.Context, tenantID, suiteID string) (*evaluation.EvaluationSuite, error)
 	ListEvaluationSuites(ctx context.Context, tenantID string) ([]*evaluation.EvaluationSuite, error)
+
+	// Phase 3 Extensions
+	SaveRoutingOutcomeV3(ctx context.Context, outcome *routing.CanonicalRoutingOutcome) error
+	ListRoutingOutcomesV3(ctx context.Context, tenantID, capabilityID string) ([]*routing.CanonicalRoutingOutcome, error)
+
+	SaveTaskFingerprint(ctx context.Context, tenantID string, fp *task.TaskFingerprint) error
+	GetTaskFingerprint(ctx context.Context, tenantID, fingerprintID string) (*task.TaskFingerprint, error)
+
+	SaveReliabilityProfile(ctx context.Context, profile *reliability.ReliabilityProfile) error
+	GetReliabilityProfile(ctx context.Context, tenantID, agentID, capabilityID string) (*reliability.ReliabilityProfile, error)
+
+	SaveAgentSLO(ctx context.Context, s *slo.AgentSLO) error
+	GetAgentSLO(ctx context.Context, tenantID, agentID, capabilityID string) (*slo.AgentSLO, error)
+	ListAgentSLOs(ctx context.Context, tenantID string) ([]*slo.AgentSLO, error)
+
+	SaveProxyInstance(ctx context.Context, inst *fleet.ProxyInstance) error
+	ListProxyInstances(ctx context.Context, tenantID string) ([]*fleet.ProxyInstance, error)
+
+	SaveRoutingModel(ctx context.Context, model *learned.RoutingModelRecord) error
+	GetRoutingModel(ctx context.Context, tenantID, modelID string) (*learned.RoutingModelRecord, error)
+	ListRoutingModels(ctx context.Context, tenantID string) ([]*learned.RoutingModelRecord, error)
 }
 
 // MemoryStore provides a thread-safe, tenant-isolated in-memory store.
@@ -101,6 +127,12 @@ type MemoryStore struct {
 	a2aProfiles  map[string]*a2a.A2ACompatibilityProfile // tenantID:profileID -> profile
 	routeOutcomes []*routing.RouteOutcome
 	evalSuites   map[string]*evaluation.EvaluationSuite // tenantID:suiteID -> suite
+	routeOutcomesV3     []*routing.CanonicalRoutingOutcome
+	fingerprints        map[string]*task.TaskFingerprint           // tenantID:fingerprintID -> fp
+	reliabilityProfiles map[string]*reliability.ReliabilityProfile // tenantID:agentID:cap -> profile
+	agentSLOs           map[string]*slo.AgentSLO                   // tenantID:agentID:cap -> slo
+	proxyFleet          map[string]*fleet.ProxyInstance            // tenantID:instanceID -> inst
+	routingModels       map[string]*learned.RoutingModelRecord     // tenantID:modelID -> model
 	Approvals    *approval.Service
 	Canaries     *canary.Manager
 	Audit        *audit.Logger
@@ -109,18 +141,24 @@ type MemoryStore struct {
 // NewMemoryStore constructs a ready in-memory datastore.
 func NewMemoryStore() *MemoryStore {
 	return &MemoryStore{
-		agents:        make(map[string]*AgentRecord),
-		policies:      make(map[string]*policy.Policy),
-		credentials:   make(map[string]*identity.Credential),
-		tools:         make(map[string]*ToolRecord),
-		graphs:        make(map[string]*graph.AgentGraph),
-		toolPassports: make(map[string]*mcp.ToolPassport),
-		a2aProfiles:   make(map[string]*a2a.A2ACompatibilityProfile),
-		routeOutcomes: make([]*routing.RouteOutcome, 0),
-		evalSuites:    make(map[string]*evaluation.EvaluationSuite),
-		Approvals:     approval.NewService(),
-		Canaries:      canary.NewManager(),
-		Audit:         audit.NewLogger(),
+		agents:              make(map[string]*AgentRecord),
+		policies:            make(map[string]*policy.Policy),
+		credentials:         make(map[string]*identity.Credential),
+		tools:               make(map[string]*ToolRecord),
+		graphs:              make(map[string]*graph.AgentGraph),
+		toolPassports:       make(map[string]*mcp.ToolPassport),
+		a2aProfiles:         make(map[string]*a2a.A2ACompatibilityProfile),
+		routeOutcomes:       make([]*routing.RouteOutcome, 0),
+		evalSuites:          make(map[string]*evaluation.EvaluationSuite),
+		routeOutcomesV3:     make([]*routing.CanonicalRoutingOutcome, 0),
+		fingerprints:        make(map[string]*task.TaskFingerprint),
+		reliabilityProfiles: make(map[string]*reliability.ReliabilityProfile),
+		agentSLOs:           make(map[string]*slo.AgentSLO),
+		proxyFleet:          make(map[string]*fleet.ProxyInstance),
+		routingModels:       make(map[string]*learned.RoutingModelRecord),
+		Approvals:           approval.NewService(),
+		Canaries:            canary.NewManager(),
+		Audit:               audit.NewLogger(),
 	}
 }
 
