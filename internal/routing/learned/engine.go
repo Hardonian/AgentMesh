@@ -74,15 +74,15 @@ func (g *Gatekeeper) EvaluateGate(outcomes []*routing.CanonicalRoutingOutcome) (
 
 // CandidatePrediction holds regression and classification outputs per candidate.
 type CandidatePrediction struct {
-	Candidate            *intelligence.CandidateAgent `json:"candidate"`
-	SuccessProbability   float64                      `json:"successProbability"` // 0.0 - 1.0
-	PredictedLatencyMs   int64                        `json:"predictedLatencyMs"`
-	EstimatedCostUSD     float64                      `json:"estimatedCostUsd"`
-	QualityEstimate      float64                      `json:"qualityEstimate"`
-	Uncertainty          intelligence.RoutingObjective `json:"-"`
-	UncertaintyStatus    string                       `json:"uncertaintyStatus"` // HIGH_EVIDENCE, MEDIUM_EVIDENCE, LOW_EVIDENCE, COLD_START
-	Eligible             bool                         `json:"eligible"`
-	DisqualificationReason string                     `json:"disqualificationReason,omitempty"`
+	Candidate              *intelligence.CandidateAgent  `json:"candidate"`
+	SuccessProbability     float64                       `json:"successProbability"` // 0.0 - 1.0
+	PredictedLatencyMs     int64                         `json:"predictedLatencyMs"`
+	EstimatedCostUSD       float64                       `json:"estimatedCostUsd"`
+	QualityEstimate        float64                       `json:"qualityEstimate"`
+	Uncertainty            intelligence.RoutingObjective `json:"-"`
+	UncertaintyStatus      string                        `json:"uncertaintyStatus"` // HIGH_EVIDENCE, MEDIUM_EVIDENCE, LOW_EVIDENCE, COLD_START
+	Eligible               bool                          `json:"eligible"`
+	DisqualificationReason string                        `json:"disqualificationReason,omitempty"`
 }
 
 // LearnedRouter provides pure Go model inference for task routing.

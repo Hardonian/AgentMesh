@@ -20,27 +20,27 @@ var (
 
 // SignedRouteConfig is an immutable, cryptographically verified data-plane route configuration.
 type SignedRouteConfig struct {
-	ConfigID           string            `json:"configId"`
-	SequenceVersion    int64             `json:"sequenceVersion"`
-	OrganizationID     string            `json:"organizationId"`
-	CapabilityID       string            `json:"capabilityId"`
-	Routes             map[string]int    `json:"routes"` // AgentID -> Weight %
-	Fallbacks          []string          `json:"fallbacks"`
-	PinnedAgent        string            `json:"pinnedAgent,omitempty"`
-	PolicyHash         string            `json:"policyHash"`
-	PayloadHash        string            `json:"payloadHash"`
-	PreviousConfigHash string            `json:"previousConfigHash"`
-	Signature          string            `json:"signature"`
-	IssuedAt           time.Time         `json:"issuedAt"`
-	EffectiveAt        time.Time         `json:"effectiveAt"`
+	ConfigID           string         `json:"configId"`
+	SequenceVersion    int64          `json:"sequenceVersion"`
+	OrganizationID     string         `json:"organizationId"`
+	CapabilityID       string         `json:"capabilityId"`
+	Routes             map[string]int `json:"routes"` // AgentID -> Weight %
+	Fallbacks          []string       `json:"fallbacks"`
+	PinnedAgent        string         `json:"pinnedAgent,omitempty"`
+	PolicyHash         string         `json:"policyHash"`
+	PayloadHash        string         `json:"payloadHash"`
+	PreviousConfigHash string         `json:"previousConfigHash"`
+	Signature          string         `json:"signature"`
+	IssuedAt           time.Time      `json:"issuedAt"`
+	EffectiveAt        time.Time      `json:"effectiveAt"`
 }
 
 // RouteMutator coordinates route state transitions and signed config distribution.
 type RouteMutator struct {
-	mu           sync.RWMutex
-	signingKey   string
-	activeSpecs  map[string]*spec.AgentRoutingSpec // CapabilityID -> Spec
-	configChain  map[string][]*SignedRouteConfig   // CapabilityID -> History of signed configs
+	mu            sync.RWMutex
+	signingKey    string
+	activeSpecs   map[string]*spec.AgentRoutingSpec   // CapabilityID -> Spec
+	configChain   map[string][]*SignedRouteConfig     // CapabilityID -> History of signed configs
 	lastKnownGood map[string]*spec.LastKnownGoodRoute // CapabilityID -> LastKnownGood
 }
 

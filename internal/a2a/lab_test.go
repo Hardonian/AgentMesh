@@ -10,14 +10,14 @@ import (
 
 func TestA2ACompatibilityLab(t *testing.T) {
 	card := &protocol.AgentCard{
-		Name:         "test-agent",
-		Version:      "1.0.0",
-		Description:  "Automated test target",
+		Name:        "test-agent",
+		Version:     "1.0.0",
+		Description: "Automated test target",
 		Capabilities: []protocol.AgentCapability{
 			{Name: "default", Description: "Default capability"},
 			{Name: "analysis", Description: "Analysis capability"},
 		},
-		Protocols:    []string{"a2a"},
+		Protocols: []string{"a2a"},
 	}
 
 	server := a2a.NewServer(card, nil, func(ctx context.Context, req *protocol.A2ATaskRequest) (*protocol.A2ATaskResponse, error) {

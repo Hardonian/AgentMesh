@@ -11,14 +11,14 @@ import (
 
 // PublicCompatibilityEntry stores an anonymized public A2A compatibility observation.
 type PublicCompatibilityEntry struct {
-	AnonymousID     string            `json:"anonymousId"` // SHA-256 hash of runtime+salt
-	Runtime         string            `json:"runtime"`     // "google-adk", "custom-go", "python"
-	Framework       string            `json:"framework"`   // "adk-go", "langgraph", "crewai"
-	ProtocolVersion string            `json:"protocolVersion"`
+	AnonymousID     string              `json:"anonymousId"` // SHA-256 hash of runtime+salt
+	Runtime         string              `json:"runtime"`     // "google-adk", "custom-go", "python"
+	Framework       string              `json:"framework"`   // "adk-go", "langgraph", "crewai"
+	ProtocolVersion string              `json:"protocolVersion"`
 	OverallStatus   CompatibilityStatus `json:"overallStatus"` // "COMPATIBLE", "PARTIALLY_COMPATIBLE", "INCOMPATIBLE"
-	Capabilities    map[string]string `json:"capabilities"`
-	TesterVersion   string            `json:"testerVersion"`
-	ObservedAt      time.Time         `json:"observedAt"`
+	Capabilities    map[string]string   `json:"capabilities"`
+	TesterVersion   string              `json:"testerVersion"`
+	ObservedAt      time.Time           `json:"observedAt"`
 }
 
 // CompatibilityMatrixView aggregates verified results across runtimes and features.

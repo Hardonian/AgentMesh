@@ -19,13 +19,13 @@ type GraphPolicyFinding struct {
 
 // GraphPolicyReport contains all static policy analysis findings across an AgentGraph.
 type GraphPolicyReport struct {
-	GraphID      string               `json:"graphId"`
-	AgentID      string               `json:"agentId"`
-	PolicyID     string               `json:"policyId"`
-	Compliant    bool                 `json:"compliant"`
-	Findings     []GraphPolicyFinding `json:"findings"`
-	AnalyzedNodes int                 `json:"analyzedNodes"`
-	AnalyzedEdges int                 `json:"analyzedEdges"`
+	GraphID       string               `json:"graphId"`
+	AgentID       string               `json:"agentId"`
+	PolicyID      string               `json:"policyId"`
+	Compliant     bool                 `json:"compliant"`
+	Findings      []GraphPolicyFinding `json:"findings"`
+	AnalyzedNodes int                  `json:"analyzedNodes"`
+	AnalyzedEdges int                  `json:"analyzedEdges"`
 }
 
 // AnalyzeGraphPolicy statically evaluates all paths and relationships in an AgentGraph against policy rules.

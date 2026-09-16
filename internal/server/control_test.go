@@ -46,15 +46,15 @@ func TestControlPlaneEndpoints(t *testing.T) {
 
 	// 1. Create optimization action
 	actPayload := spec.AgentOptimizationAction{
-		ActionID:       "act-test-01",
-		CapabilityID:   "summarize",
-		TargetType:     "ROUTE",
-		TargetID:       "route-sum",
-		ActionType:     spec.ActionChangeRouteWeight,
-		CurrentState:   map[string]any{"weight": 100},
-		ProposedState:  map[string]any{"weight": 80},
-		Reason:         "minor cost optimization",
-		RiskClass:      spec.RiskLow,
+		ActionID:      "act-test-01",
+		CapabilityID:  "summarize",
+		TargetType:    "ROUTE",
+		TargetID:      "route-sum",
+		ActionType:    spec.ActionChangeRouteWeight,
+		CurrentState:  map[string]any{"weight": 100},
+		ProposedState: map[string]any{"weight": 80},
+		Reason:        "minor cost optimization",
+		RiskClass:     spec.RiskLow,
 		BlastRadius: spec.BlastRadius{
 			TrafficPercent: 20,
 		},

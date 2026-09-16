@@ -239,5 +239,3 @@ func TestStore_FailClosedTenantIsolation(t *testing.T) {
 		t.Fatalf("expected ErrEmptyTenant for ListProductionOutcomes, got %v", err)
 	}
 }
-
-

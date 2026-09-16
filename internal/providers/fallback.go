@@ -22,11 +22,11 @@ type ModelTarget struct {
 
 // FallbackEvent logs whenever a model fails over to a secondary target.
 type FallbackEvent struct {
-	PrimaryModel   string    `json:"primaryModel"`
-	FallbackModel  string    `json:"fallbackModel"`
-	Reason         string    `json:"reason"`
-	AllowedByPolicy bool     `json:"allowedByPolicy"`
-	Timestamp      time.Time `json:"timestamp"`
+	PrimaryModel    string    `json:"primaryModel"`
+	FallbackModel   string    `json:"fallbackModel"`
+	Reason          string    `json:"reason"`
+	AllowedByPolicy bool      `json:"allowedByPolicy"`
+	Timestamp       time.Time `json:"timestamp"`
 }
 
 // ModelRouter coordinates policy-governed model selection and safe fallback.

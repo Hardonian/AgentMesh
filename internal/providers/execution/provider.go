@@ -8,10 +8,10 @@ import (
 )
 
 var (
-	ErrUnmanagedResource     = errors.New("resource is not managed by AgentMesh (missing agentmesh.io/managed label)")
-	ErrUnsupportedAction     = errors.New("action not supported by execution provider")
-	ErrProviderFailure       = errors.New("execution provider apply failed")
-	ErrCredentialRevocation  = errors.New("provider credential revoked or invalid; failing closed")
+	ErrUnmanagedResource    = errors.New("resource is not managed by AgentMesh (missing agentmesh.io/managed label)")
+	ErrUnsupportedAction    = errors.New("action not supported by execution provider")
+	ErrProviderFailure      = errors.New("execution provider apply failed")
+	ErrCredentialRevocation = errors.New("provider credential revoked or invalid; failing closed")
 )
 
 // DryRunResult captures the expected diff and impact before applying.
@@ -34,9 +34,9 @@ type ApplyResult struct {
 
 // RollbackResult records the restoration of prior state.
 type RollbackResult struct {
-	Success       bool     `json:"success"`
+	Success       bool           `json:"success"`
 	RestoredState map[string]any `json:"restoredState"`
-	ExecutionLog  []string `json:"executionLog"`
+	ExecutionLog  []string       `json:"executionLog"`
 }
 
 // ExecutionProvider defines the lifecycle contract for mutating execution targets.

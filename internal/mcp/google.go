@@ -12,13 +12,13 @@ import (
 
 // GoogleServiceMetadata describes a discovered or configured Google Cloud MCP service.
 type GoogleServiceMetadata struct {
-	ServiceID     string        `json:"serviceId"`     // e.g. "bigquery", "storage", "maps"
-	Endpoint      string        `json:"endpoint"`      // gRPC / HTTP endpoint
-	ProjectID     string        `json:"projectId"`     // Target GCP project
-	Region        string        `json:"region"`        // Target GCP region
-	AuthMode      string        `json:"authMode"`      // "workload_identity", "adc", "oauth2"
-	DefaultRisk   ToolRiskClass `json:"defaultRisk"`   // Default risk rating
-	HealthStatus  string        `json:"healthStatus"`  // "HEALTHY", "DEGRADED", "UNREACHABLE"
+	ServiceID     string        `json:"serviceId"`    // e.g. "bigquery", "storage", "maps"
+	Endpoint      string        `json:"endpoint"`     // gRPC / HTTP endpoint
+	ProjectID     string        `json:"projectId"`    // Target GCP project
+	Region        string        `json:"region"`       // Target GCP region
+	AuthMode      string        `json:"authMode"`     // "workload_identity", "adc", "oauth2"
+	DefaultRisk   ToolRiskClass `json:"defaultRisk"`  // Default risk rating
+	HealthStatus  string        `json:"healthStatus"` // "HEALTHY", "DEGRADED", "UNREACHABLE"
 	LastCheckedAt time.Time     `json:"lastCheckedAt"`
 }
 

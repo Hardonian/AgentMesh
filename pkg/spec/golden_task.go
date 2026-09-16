@@ -9,14 +9,14 @@ import (
 
 // GoldenTask represents a single reference task within a golden task set.
 type GoldenTask struct {
-	TaskID              string            `json:"taskId"`
-	CapabilityID        string            `json:"capabilityId"`
-	SanitizedInput      map[string]any    `json:"sanitizedInput"`
-	ExpectedOutputMatch string            `json:"expectedOutputMatch,omitempty"`
-	MaxAllowedLatencyMs int64             `json:"maxAllowedLatencyMs"`
-	MaxAllowedCostUSD   float64           `json:"maxAllowedCostUsd"`
-	PermittedTools      []string          `json:"permittedTools"`
-	QualityAssertions   map[string]any    `json:"qualityAssertions,omitempty"`
+	TaskID              string         `json:"taskId"`
+	CapabilityID        string         `json:"capabilityId"`
+	SanitizedInput      map[string]any `json:"sanitizedInput"`
+	ExpectedOutputMatch string         `json:"expectedOutputMatch,omitempty"`
+	MaxAllowedLatencyMs int64          `json:"maxAllowedLatencyMs"`
+	MaxAllowedCostUSD   float64        `json:"maxAllowedCostUsd"`
+	PermittedTools      []string       `json:"permittedTools"`
+	QualityAssertions   map[string]any `json:"qualityAssertions,omitempty"`
 }
 
 // GoldenTaskSet defines a tenant-private, versioned test suite used before canaries.

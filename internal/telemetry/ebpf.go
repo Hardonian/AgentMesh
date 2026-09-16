@@ -33,8 +33,8 @@ type AgentNetworkSummary struct {
 
 // EBPFOpsObserver monitors high-throughput agent networks via eBPF kernel hooks or userspace socket probes.
 type EBPFOpsObserver struct {
-	mu           sync.RWMutex
-	flows        map[string]*SocketFlowMetric
+	mu            sync.RWMutex
+	flows         map[string]*SocketFlowMetric
 	isLinuxKernel bool
 }
 
@@ -42,7 +42,7 @@ type EBPFOpsObserver struct {
 func NewEBPFOpsObserver() *EBPFOpsObserver {
 	isLinux := runtime.GOOS == "linux"
 	return &EBPFOpsObserver{
-		flows:        make(map[string]*SocketFlowMetric),
+		flows:         make(map[string]*SocketFlowMetric),
 		isLinuxKernel: isLinux,
 	}
 }

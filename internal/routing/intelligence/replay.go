@@ -27,14 +27,14 @@ type RegretMetrics struct {
 
 // ReplayComparison compares historical route selection against candidate router selection.
 type ReplayComparison struct {
-	TaskID                 string         `json:"taskId"`
-	CapabilityID           string         `json:"capabilityId"`
-	HistoricalSelected     string         `json:"historicalSelected"`
-	CandidateRouterChoice  string         `json:"candidateRouterChoice"`
-	DecisionsMatch         bool           `json:"decisionsMatch"`
-	EstimatedCostDeltaUSD  float64        `json:"estimatedCostDeltaUsd"`  // Negative means savings
-	EstimatedLatencyDelta  int64          `json:"estimatedLatencyDeltaMs"` // Negative means speedup
-	Regret                 RegretMetrics  `json:"regret"`
+	TaskID                string        `json:"taskId"`
+	CapabilityID          string        `json:"capabilityId"`
+	HistoricalSelected    string        `json:"historicalSelected"`
+	CandidateRouterChoice string        `json:"candidateRouterChoice"`
+	DecisionsMatch        bool          `json:"decisionsMatch"`
+	EstimatedCostDeltaUSD float64       `json:"estimatedCostDeltaUsd"`   // Negative means savings
+	EstimatedLatencyDelta int64         `json:"estimatedLatencyDeltaMs"` // Negative means speedup
+	Regret                RegretMetrics `json:"regret"`
 }
 
 // ReplaySummary aggregates offline replay results across a corpus of tasks.

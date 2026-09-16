@@ -7,11 +7,11 @@ import (
 
 // AutomationFreeze tracks emergency kill switch and freeze states.
 type AutomationFreeze struct {
-	Scope     string    `json:"scope"` // GLOBAL, TENANT, PROJECT, CAPABILITY
-	ScopeID   string    `json:"scopeId"`
-	Reason    string    `json:"reason"`
-	FrozenBy  string    `json:"frozenBy"`
-	FrozenAt  time.Time `json:"frozenAt"`
+	Scope     string     `json:"scope"` // GLOBAL, TENANT, PROJECT, CAPABILITY
+	ScopeID   string     `json:"scopeId"`
+	Reason    string     `json:"reason"`
+	FrozenBy  string     `json:"frozenBy"`
+	FrozenAt  time.Time  `json:"frozenAt"`
 	ExpiresAt *time.Time `json:"expiresAt,omitempty"`
 }
 

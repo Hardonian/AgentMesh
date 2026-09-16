@@ -21,11 +21,11 @@ const (
 
 // ArmorFinding details an individual security or safety detection.
 type ArmorFinding struct {
-	Category    ArmorCategory `json:"category"`
-	Severity    string        `json:"severity"` // "LOW", "MEDIUM", "HIGH", "CRITICAL"
-	MatchSnippet string       `json:"matchSnippet,omitempty"`
-	Description string        `json:"description"`
-	ActionTaken string        `json:"actionTaken"` // "BLOCKED", "MASKED", "LOGGED"
+	Category     ArmorCategory `json:"category"`
+	Severity     string        `json:"severity"` // "LOW", "MEDIUM", "HIGH", "CRITICAL"
+	MatchSnippet string        `json:"matchSnippet,omitempty"`
+	Description  string        `json:"description"`
+	ActionTaken  string        `json:"actionTaken"` // "BLOCKED", "MASKED", "LOGGED"
 }
 
 // ArmorInspectionResult records the outcome of a Model Armor security scan.
@@ -87,16 +87,16 @@ func NewModelArmorFilter(cfg *ModelArmorConfig) *ModelArmorFilter {
 	}
 
 	filter.piiRegexes = []*regexp.Regexp{
-		regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`),                 // US SSN
-		regexp.MustCompile(`\b(?:\d{4}[ -]?){3}\d{4}\b`),             // Credit card numbers
+		regexp.MustCompile(`\b\d{3}-\d{2}-\d{4}\b`),                              // US SSN
+		regexp.MustCompile(`\b(?:\d{4}[ -]?){3}\d{4}\b`),                         // Credit card numbers
 		regexp.MustCompile(`\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b`), // Email addresses
 	}
 
 	filter.credRegexes = []*regexp.Regexp{
-		regexp.MustCompile(`(?i)mesh_[a-f0-9]{32,64}`),               // AgentMesh API Keys
-		regexp.MustCompile(`(?i)(AKIA|ASIA)[0-9A-Z]{16}`),            // AWS Keys
-		regexp.MustCompile(`(?i)AIza[0-9A-Za-z-_]{35}`),              // Google API Keys
-		regexp.MustCompile(`(?i)ghp_[0-9a-zA-Z]{36}`),                // GitHub Tokens
+		regexp.MustCompile(`(?i)mesh_[a-f0-9]{32,64}`),    // AgentMesh API Keys
+		regexp.MustCompile(`(?i)(AKIA|ASIA)[0-9A-Z]{16}`), // AWS Keys
+		regexp.MustCompile(`(?i)AIza[0-9A-Za-z-_]{35}`),   // Google API Keys
+		regexp.MustCompile(`(?i)ghp_[0-9a-zA-Z]{36}`),     // GitHub Tokens
 	}
 
 	return filter

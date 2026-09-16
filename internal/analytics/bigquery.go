@@ -13,18 +13,18 @@ import (
 
 // BigQueryExportBatch represents a formatted export payload ready for streaming or batch ingestion into BigQuery.
 type BigQueryExportBatch struct {
-	TenantID     string                            `json:"tenantId"`
-	ProjectID    string                            `json:"projectId"`
-	DatasetID    string                            `json:"datasetId"`
-	TableName    string                            `json:"tableName"`
-	ExportedAt   time.Time                         `json:"exportedAt"`
-	RecordCount  int                               `json:"recordCount"`
-	OutcomeRows  []*routing.CanonicalRoutingOutcome `json:"outcomeRows"`
+	TenantID    string                             `json:"tenantId"`
+	ProjectID   string                             `json:"projectId"`
+	DatasetID   string                             `json:"datasetId"`
+	TableName   string                             `json:"tableName"`
+	ExportedAt  time.Time                          `json:"exportedAt"`
+	RecordCount int                                `json:"recordCount"`
+	OutcomeRows []*routing.CanonicalRoutingOutcome `json:"outcomeRows"`
 }
 
 // Exporter manages formatting and streaming of outcomes to tenant-isolated BigQuery datasets.
 type Exporter struct {
-	mu           sync.RWMutex
+	mu              sync.RWMutex
 	exportedBatches []*BigQueryExportBatch
 }
 

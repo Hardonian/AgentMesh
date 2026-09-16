@@ -42,8 +42,8 @@ func TestComputeVerifiedOutcome(t *testing.T) {
 		StartTime:      time.Now().Add(-1 * time.Hour),
 		EndTime:        time.Now(),
 		TotalRequests:  800,
-		SuccessRate:    0.92, // dropped
-		P95LatencyMs:   1800, // increased
+		SuccessRate:    0.92,  // dropped
+		P95LatencyMs:   1800,  // increased
 		CostPerTaskUSD: 0.080, // more expensive
 	}
 	outReg := ComputeVerifiedOutcome("act-2", "org-1", "proj-1", "search", "ROUTE", "r-1", before, afterRegressed)

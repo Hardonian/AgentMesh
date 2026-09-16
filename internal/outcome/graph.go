@@ -53,11 +53,11 @@ const (
 
 // GraphNode represents an operational entity.
 type GraphNode struct {
-	ID         string            `json:"id"`
-	Type       NodeType          `json:"type"`
-	TenantID   string            `json:"tenantId"`
-	Properties map[string]any    `json:"properties,omitempty"`
-	CreatedAt  time.Time         `json:"createdAt"`
+	ID         string         `json:"id"`
+	Type       NodeType       `json:"type"`
+	TenantID   string         `json:"tenantId"`
+	Properties map[string]any `json:"properties,omitempty"`
+	CreatedAt  time.Time      `json:"createdAt"`
 }
 
 // GraphEdge represents a directed operational link.
@@ -106,11 +106,11 @@ type BottleneckReport struct {
 
 // OperationalOutcomeGraph manages in-memory/relational graph queries.
 type OperationalOutcomeGraph struct {
-	mu       sync.RWMutex
-	nodes    map[string]*GraphNode           // tenant:id -> Node
-	edges    map[string]*GraphEdge           // tenant:id -> Edge
-	adjOut   map[string]map[string]*GraphEdge // tenant:fromId -> toId -> Edge
-	adjIn    map[string]map[string]*GraphEdge // tenant:toId -> fromId -> Edge
+	mu     sync.RWMutex
+	nodes  map[string]*GraphNode            // tenant:id -> Node
+	edges  map[string]*GraphEdge            // tenant:id -> Edge
+	adjOut map[string]map[string]*GraphEdge // tenant:fromId -> toId -> Edge
+	adjIn  map[string]map[string]*GraphEdge // tenant:toId -> fromId -> Edge
 }
 
 // NewOperationalOutcomeGraph creates an operational outcome graph.

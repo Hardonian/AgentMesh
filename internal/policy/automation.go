@@ -11,36 +11,36 @@ import (
 type ExecutionMode string
 
 const (
-	ModeAdvisory             ExecutionMode = "ADVISORY"              // Default: No mutations, recommendations only
-	ModeApprovalRequired     ExecutionMode = "APPROVAL_REQUIRED"     // Prepares action; human must approve exact hash
-	ModeGuardedAutomation    ExecutionMode = "GUARDED_AUTOMATION"    // Executes low-risk actions matching policy automatically
+	ModeAdvisory             ExecutionMode = "ADVISORY"               // Default: No mutations, recommendations only
+	ModeApprovalRequired     ExecutionMode = "APPROVAL_REQUIRED"      // Prepares action; human must approve exact hash
+	ModeGuardedAutomation    ExecutionMode = "GUARDED_AUTOMATION"     // Executes low-risk actions matching policy automatically
 	ModeFullPolicyAutomation ExecutionMode = "FULL_POLICY_AUTOMATION" // Full automated progression for mature tenants
 )
 
 // AutomationPolicy defines declarative constraints on autonomous operations.
 type AutomationPolicy struct {
-	ID               string           `json:"id" yaml:"id"`
-	OrganizationID   string           `json:"organizationId" yaml:"organizationId"`
-	ProjectID        string           `json:"projectId" yaml:"projectId"`
-	Mode             ExecutionMode    `json:"mode" yaml:"mode"`
+	ID               string            `json:"id" yaml:"id"`
+	OrganizationID   string            `json:"organizationId" yaml:"organizationId"`
+	ProjectID        string            `json:"projectId" yaml:"projectId"`
+	Mode             ExecutionMode     `json:"mode" yaml:"mode"`
 	Allow            []spec.ActionType `json:"allow" yaml:"allow"`
 	ApprovalRequired []spec.ActionType `json:"approvalRequired" yaml:"approvalRequired"`
 	Deny             []spec.ActionType `json:"deny" yaml:"deny"`
-	Requirements     RequirementsRule `json:"requirements" yaml:"requirements"`
-	BlastRadius      BlastRadiusRule  `json:"blastRadius" yaml:"blastRadius"`
-	Economics        EconomicsRule    `json:"economics" yaml:"economics"`
-	Quality          QualityRule      `json:"quality" yaml:"quality"`
-	ChangeWindows    []ChangeWindow   `json:"changeWindows,omitempty" yaml:"changeWindows,omitempty"`
-	Frozen           bool             `json:"frozen" yaml:"frozen"`
-	CreatedAt        time.Time        `json:"createdAt" yaml:"createdAt"`
-	UpdatedAt        time.Time        `json:"updatedAt" yaml:"updatedAt"`
+	Requirements     RequirementsRule  `json:"requirements" yaml:"requirements"`
+	BlastRadius      BlastRadiusRule   `json:"blastRadius" yaml:"blastRadius"`
+	Economics        EconomicsRule     `json:"economics" yaml:"economics"`
+	Quality          QualityRule       `json:"quality" yaml:"quality"`
+	ChangeWindows    []ChangeWindow    `json:"changeWindows,omitempty" yaml:"changeWindows,omitempty"`
+	Frozen           bool              `json:"frozen" yaml:"frozen"`
+	CreatedAt        time.Time         `json:"createdAt" yaml:"createdAt"`
+	UpdatedAt        time.Time         `json:"updatedAt" yaml:"updatedAt"`
 }
 
 // RequirementsRule specifies operational evidence gates.
 type RequirementsRule struct {
-	MinReliability   float64 `json:"minReliability" yaml:"minReliability"`     // e.g. 0.99
-	MinEvalPassRate  float64 `json:"minEvalPassRate" yaml:"minEvalPassRate"`   // e.g. 0.97
-	MinSampleCount   int64   `json:"minSampleCount" yaml:"minSampleCount"`     // e.g. 50
+	MinReliability  float64 `json:"minReliability" yaml:"minReliability"`   // e.g. 0.99
+	MinEvalPassRate float64 `json:"minEvalPassRate" yaml:"minEvalPassRate"` // e.g. 0.97
+	MinSampleCount  int64   `json:"minSampleCount" yaml:"minSampleCount"`   // e.g. 50
 }
 
 // BlastRadiusRule caps the scope of autonomous changes.

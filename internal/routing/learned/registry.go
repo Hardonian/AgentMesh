@@ -35,10 +35,10 @@ type RoutingModelRecord struct {
 
 // ModelRegistry manages routing model lifecycles, shadow evaluations, promotions, and rollbacks.
 type ModelRegistry struct {
-	mu           sync.RWMutex
-	models       map[string]*RoutingModelRecord // tenant:modelId -> Model
-	activeModel  map[string]string              // tenant -> modelId
-	lastKnownGood map[string]string             // tenant -> modelId
+	mu            sync.RWMutex
+	models        map[string]*RoutingModelRecord // tenant:modelId -> Model
+	activeModel   map[string]string              // tenant -> modelId
+	lastKnownGood map[string]string              // tenant -> modelId
 }
 
 // NewModelRegistry creates a new ModelRegistry.

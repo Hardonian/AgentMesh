@@ -12,9 +12,9 @@ import (
 type ComplexityClass string
 
 const (
-	ComplexitySimple    ComplexityClass = "SIMPLE"    // Fast lookup, single-shot, formatting
-	ComplexityStandard  ComplexityClass = "STANDARD"  // Typical query, tool invocation, summarization
-	ComplexityComplex   ComplexityClass = "COMPLEX"   // Multi-hop, deep reasoning, multiple tool calls
+	ComplexitySimple    ComplexityClass = "SIMPLE"     // Fast lookup, single-shot, formatting
+	ComplexityStandard  ComplexityClass = "STANDARD"   // Typical query, tool invocation, summarization
+	ComplexityComplex   ComplexityClass = "COMPLEX"    // Multi-hop, deep reasoning, multiple tool calls
 	ComplexityLongChain ComplexityClass = "LONG_CHAIN" // Multi-agent delegation, iterative verification
 )
 

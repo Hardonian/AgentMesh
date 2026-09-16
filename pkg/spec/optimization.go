@@ -70,34 +70,34 @@ type ApprovalRequirement struct {
 
 // AgentOptimizationAction represents a canonical, typed optimization request.
 type AgentOptimizationAction struct {
-	ActionID                string              `json:"actionId"`
-	OrganizationID          string              `json:"organizationId"`
-	ProjectID               string              `json:"projectId"`
-	CapabilityID            string              `json:"capabilityId"`
-	TargetType              string              `json:"targetType"` // AGENT, ROUTE, MODEL, TOOL, PROXY
-	TargetID                string              `json:"targetId"`
-	ActionType              ActionType          `json:"actionType"`
-	CurrentState            map[string]any      `json:"currentState"`
-	ProposedState           map[string]any      `json:"proposedState"`
-	Reason                  string              `json:"reason"`
-	Evidence                map[string]any      `json:"evidence"`
-	Confidence              float64             `json:"confidence"`
-	PolicyVersion           string              `json:"policyVersion"`
-	RouteAlgorithmVersion   string              `json:"routeAlgorithmVersion"`
-	RiskClass               RiskClass           `json:"riskClass"`
-	BlastRadius             BlastRadius         `json:"blastRadius"`
-	CostDeltaEstimate       float64             `json:"costDeltaEstimate"`
-	LatencyDeltaEstimateMs  int64               `json:"latencyDeltaEstimateMs"`
-	QualityDeltaEstimate    float64             `json:"qualityDeltaEstimate"`
-	ReliabilityDeltaEstimate float64            `json:"reliabilityDeltaEstimate"`
-	RollbackPlan            RollbackPlan        `json:"rollbackPlan"`
-	ApprovalRequirement     ApprovalRequirement `json:"approvalRequirement"`
-	CreatedAt               time.Time           `json:"createdAt"`
-	ApprovedAt              *time.Time          `json:"approvedAt,omitempty"`
-	StartedAt               *time.Time          `json:"startedAt,omitempty"`
-	CompletedAt             *time.Time          `json:"completedAt,omitempty"`
-	Result                  string              `json:"result,omitempty"` // SUCCESS, FAILED, ROLLED_BACK
-	SchemaVersion           string              `json:"schemaVersion"`
+	ActionID                 string              `json:"actionId"`
+	OrganizationID           string              `json:"organizationId"`
+	ProjectID                string              `json:"projectId"`
+	CapabilityID             string              `json:"capabilityId"`
+	TargetType               string              `json:"targetType"` // AGENT, ROUTE, MODEL, TOOL, PROXY
+	TargetID                 string              `json:"targetId"`
+	ActionType               ActionType          `json:"actionType"`
+	CurrentState             map[string]any      `json:"currentState"`
+	ProposedState            map[string]any      `json:"proposedState"`
+	Reason                   string              `json:"reason"`
+	Evidence                 map[string]any      `json:"evidence"`
+	Confidence               float64             `json:"confidence"`
+	PolicyVersion            string              `json:"policyVersion"`
+	RouteAlgorithmVersion    string              `json:"routeAlgorithmVersion"`
+	RiskClass                RiskClass           `json:"riskClass"`
+	BlastRadius              BlastRadius         `json:"blastRadius"`
+	CostDeltaEstimate        float64             `json:"costDeltaEstimate"`
+	LatencyDeltaEstimateMs   int64               `json:"latencyDeltaEstimateMs"`
+	QualityDeltaEstimate     float64             `json:"qualityDeltaEstimate"`
+	ReliabilityDeltaEstimate float64             `json:"reliabilityDeltaEstimate"`
+	RollbackPlan             RollbackPlan        `json:"rollbackPlan"`
+	ApprovalRequirement      ApprovalRequirement `json:"approvalRequirement"`
+	CreatedAt                time.Time           `json:"createdAt"`
+	ApprovedAt               *time.Time          `json:"approvedAt,omitempty"`
+	StartedAt                *time.Time          `json:"startedAt,omitempty"`
+	CompletedAt              *time.Time          `json:"completedAt,omitempty"`
+	Result                   string              `json:"result,omitempty"` // SUCCESS, FAILED, ROLLED_BACK
+	SchemaVersion            string              `json:"schemaVersion"`
 }
 
 // ComputeActionHash returns an immutable, deterministic SHA-256 fingerprint of the action's core parameters.

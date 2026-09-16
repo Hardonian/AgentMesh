@@ -67,22 +67,22 @@ type ActionStep struct {
 
 // ActionWorkflow records the durable progress of an optimization action.
 type ActionWorkflow struct {
-	WorkflowID          string                        `json:"workflowId"`
-	OrganizationID      string                        `json:"organizationId"`
-	ProjectID           string                        `json:"projectId"`
-	ActionID            string                        `json:"actionId"`
-	Action              *spec.AgentOptimizationAction `json:"action"`
-	ActionHash          string                        `json:"actionHash"`
-	CurrentState        WorkflowState                 `json:"currentState"`
-	Steps               []ActionStep                  `json:"steps"`
-	CurrentStepIndex    int                           `json:"currentStepIndex"`
-	TargetLockKey       string                        `json:"targetLockKey"`
-	ApprovedBy          string                        `json:"approvedBy,omitempty"`
-	ApprovedActionHash  string                        `json:"approvedActionHash,omitempty"`
-	ErrorMessage        string                        `json:"errorMessage,omitempty"`
-	LastEvaluatedAt     time.Time                     `json:"lastEvaluatedAt"`
-	CreatedAt           time.Time                     `json:"createdAt"`
-	UpdatedAt           time.Time                     `json:"updatedAt"`
+	WorkflowID         string                        `json:"workflowId"`
+	OrganizationID     string                        `json:"organizationId"`
+	ProjectID          string                        `json:"projectId"`
+	ActionID           string                        `json:"actionId"`
+	Action             *spec.AgentOptimizationAction `json:"action"`
+	ActionHash         string                        `json:"actionHash"`
+	CurrentState       WorkflowState                 `json:"currentState"`
+	Steps              []ActionStep                  `json:"steps"`
+	CurrentStepIndex   int                           `json:"currentStepIndex"`
+	TargetLockKey      string                        `json:"targetLockKey"`
+	ApprovedBy         string                        `json:"approvedBy,omitempty"`
+	ApprovedActionHash string                        `json:"approvedActionHash,omitempty"`
+	ErrorMessage       string                        `json:"errorMessage,omitempty"`
+	LastEvaluatedAt    time.Time                     `json:"lastEvaluatedAt"`
+	CreatedAt          time.Time                     `json:"createdAt"`
+	UpdatedAt          time.Time                     `json:"updatedAt"`
 }
 
 // IsValidTransition checks if moving from current to next state is permissible.

@@ -33,10 +33,10 @@ type AgentSLO struct {
 	TenantID             string    `json:"tenantId"`
 	AgentID              string    `json:"agentId"`
 	CapabilityID         string    `json:"capabilityId"`
-	TargetSuccessRate    float64   `json:"targetSuccessRate"`    // e.g. 0.99
-	MaxP95LatencyMs      int64     `json:"maxP95LatencyMs"`      // e.g. 4000
-	MaxCostUSD           float64   `json:"maxCostUsd"`           // e.g. 0.10
-	TargetToolSuccess    float64   `json:"targetToolSuccess"`    // e.g. 0.995
+	TargetSuccessRate    float64   `json:"targetSuccessRate"` // e.g. 0.99
+	MaxP95LatencyMs      int64     `json:"maxP95LatencyMs"`   // e.g. 4000
+	MaxCostUSD           float64   `json:"maxCostUsd"`        // e.g. 0.10
+	TargetToolSuccess    float64   `json:"targetToolSuccess"` // e.g. 0.995
 	CurrentStatus        SLOStatus `json:"currentStatus"`
 	RemainingErrorBudget float64   `json:"remainingErrorBudget"` // 0.0 to 1.0 (1.0 = 100% budget left)
 	LastEvaluatedAt      time.Time `json:"lastEvaluatedAt"`
@@ -44,22 +44,22 @@ type AgentSLO struct {
 
 // CapabilityHealth summarizes operational availability of a capability.
 type CapabilityHealth struct {
-	CapabilityID string                 `json:"capabilityId"`
-	TenantID     string                 `json:"tenantId"`
-	Status       CapabilityHealthStatus `json:"status"`
-	TotalAgents  int                    `json:"totalAgents"`
-	HealthyAgents int                   `json:"healthyAgents"`
-	BreachedAgents int                  `json:"breachedAgents"`
-	P95LatencyMs int64                  `json:"p95LatencyMs"`
-	AverageCost  float64                `json:"averageCost"`
-	LastUpdated  time.Time              `json:"lastUpdated"`
+	CapabilityID   string                 `json:"capabilityId"`
+	TenantID       string                 `json:"tenantId"`
+	Status         CapabilityHealthStatus `json:"status"`
+	TotalAgents    int                    `json:"totalAgents"`
+	HealthyAgents  int                    `json:"healthyAgents"`
+	BreachedAgents int                    `json:"breachedAgents"`
+	P95LatencyMs   int64                  `json:"p95LatencyMs"`
+	AverageCost    float64                `json:"averageCost"`
+	LastUpdated    time.Time              `json:"lastUpdated"`
 }
 
 // Manager evaluates and stores AgentSLOs and CapabilityHealth.
 type Manager struct {
-	mu           sync.RWMutex
-	slos         map[string]*AgentSLO        // tenant:agent:cap -> SLO
-	capHealth    map[string]*CapabilityHealth // tenant:cap -> CapabilityHealth
+	mu        sync.RWMutex
+	slos      map[string]*AgentSLO         // tenant:agent:cap -> SLO
+	capHealth map[string]*CapabilityHealth // tenant:cap -> CapabilityHealth
 }
 
 // NewManager creates an SLO manager.

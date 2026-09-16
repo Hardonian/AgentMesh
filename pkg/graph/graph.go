@@ -224,17 +224,17 @@ func (g *AgentGraph) FindCycles() [][]string {
 
 // GraphDiff captures semantic differences between two versions of an AgentGraph.
 type GraphDiff struct {
-	OldVersion        string   `json:"old_version"`
-	NewVersion        string   `json:"new_version"`
-	AddedNodes        []string `json:"added_nodes"`
-	RemovedNodes      []string `json:"removed_nodes"`
-	AddedTools        []string `json:"added_tools"`
-	RemovedTools      []string `json:"removed_tools"`
-	AddedDelegations  []string `json:"added_delegations"`
+	OldVersion         string   `json:"old_version"`
+	NewVersion         string   `json:"new_version"`
+	AddedNodes         []string `json:"added_nodes"`
+	RemovedNodes       []string `json:"removed_nodes"`
+	AddedTools         []string `json:"added_tools"`
+	RemovedTools       []string `json:"removed_tools"`
+	AddedDelegations   []string `json:"added_delegations"`
 	RemovedDelegations []string `json:"removed_delegations"`
-	AddedModels       []string `json:"added_models"`
-	RemovedModels     []string `json:"removed_models"`
-	HasBreakingChanges bool   `json:"has_breaking_changes"`
+	AddedModels        []string `json:"added_models"`
+	RemovedModels      []string `json:"removed_models"`
+	HasBreakingChanges bool     `json:"has_breaking_changes"`
 }
 
 // DiffGraphs compares two versions of an AgentGraph.

@@ -642,4 +642,3 @@ func TestExtendedAPI_AdvancedControlAndA2A(t *testing.T) {
 		t.Fatalf("expected 200 or 404 on promote router, got %d", rec.Code)
 	}
 }
-

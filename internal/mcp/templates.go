@@ -10,11 +10,11 @@ import (
 type PolicyTemplateType string
 
 const (
-	TemplateReadOnly        PolicyTemplateType = "READ_ONLY"
+	TemplateReadOnly         PolicyTemplateType = "READ_ONLY"
 	TemplateApprovalForWrite PolicyTemplateType = "APPROVAL_FOR_WRITE"
-	TemplateDenyDestructive PolicyTemplateType = "DENY_DESTRUCTIVE"
-	TemplateRestrictProject PolicyTemplateType = "RESTRICT_PROJECT"
-	TemplateRestrictRegion  PolicyTemplateType = "RESTRICT_REGION"
+	TemplateDenyDestructive  PolicyTemplateType = "DENY_DESTRUCTIVE"
+	TemplateRestrictProject  PolicyTemplateType = "RESTRICT_PROJECT"
+	TemplateRestrictRegion   PolicyTemplateType = "RESTRICT_REGION"
 )
 
 // GenerateGooglePolicyTemplate constructs a declarative Policy tailored for Google Cloud MCP services.

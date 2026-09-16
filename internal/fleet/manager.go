@@ -43,10 +43,10 @@ type FleetSummary struct {
 
 // CachedSignedConfig stores local configuration on the proxy for offline survivability.
 type CachedSignedConfig struct {
-	ConfigBundleJSON []byte    `json:"configBundleJson"`
-	Signature        string    `json:"signature"`
-	ConfigVersion    string    `json:"configVersion"`
-	DownloadedAt     time.Time `json:"downloadedAt"`
+	ConfigBundleJSON []byte        `json:"configBundleJson"`
+	Signature        string        `json:"signature"`
+	ConfigVersion    string        `json:"configVersion"`
+	DownloadedAt     time.Time     `json:"downloadedAt"`
 	MaxStaleness     time.Duration `json:"maxStaleness"` // e.g. 24h before fail-closed
 }
 

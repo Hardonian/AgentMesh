@@ -39,13 +39,13 @@ type EvaluationTestCase struct {
 
 // EvaluationSuite specifies a repeatable test suite bound to an agent capability.
 type EvaluationSuite struct {
-	ID           string               `json:"id" yaml:"id"`
-	TenantID     string               `json:"tenantId" yaml:"tenant_id"`
-	Capability   string               `json:"capability" yaml:"capability"`
-	Description  string               `json:"description" yaml:"description"`
-	TestCases    []EvaluationTestCase `json:"testCases" yaml:"test_cases"`
-	LLMJudge     *LLMJudgeConfig      `json:"llmJudge,omitempty" yaml:"llm_judge,omitempty"`
-	CreatedAt    time.Time            `json:"createdAt"`
+	ID          string               `json:"id" yaml:"id"`
+	TenantID    string               `json:"tenantId" yaml:"tenant_id"`
+	Capability  string               `json:"capability" yaml:"capability"`
+	Description string               `json:"description" yaml:"description"`
+	TestCases   []EvaluationTestCase `json:"testCases" yaml:"test_cases"`
+	LLMJudge    *LLMJudgeConfig      `json:"llmJudge,omitempty" yaml:"llm_judge,omitempty"`
+	CreatedAt   time.Time            `json:"createdAt"`
 }
 
 // EvaluationProvenance details the exact conditions under which a score was produced.

@@ -15,21 +15,21 @@ type ImpactDimension struct {
 
 // ChangeImpactReport provides an objective breakdown of proposed mutations.
 type ChangeImpactReport struct {
-	RiskClass            spec.RiskClass    `json:"riskClass"`
-	Dimensions           []ImpactDimension `json:"dimensions"`
-	BlastRadius          spec.BlastRadius  `json:"blastRadius"`
+	RiskClass             spec.RiskClass    `json:"riskClass"`
+	Dimensions            []ImpactDimension `json:"dimensions"`
+	BlastRadius           spec.BlastRadius  `json:"blastRadius"`
 	RequiresHumanApproval bool              `json:"requiresHumanApproval"`
-	ApprovalReasons      []string          `json:"approvalReasons"`
+	ApprovalReasons       []string          `json:"approvalReasons"`
 }
 
 // AnalyzeActionImpact inspects proposed state changes against risk heuristics.
 func AnalyzeActionImpact(action *spec.AgentOptimizationAction) *ChangeImpactReport {
 	report := &ChangeImpactReport{
-		RiskClass:            spec.RiskLow,
-		Dimensions:           make([]ImpactDimension, 0),
-		BlastRadius:          action.BlastRadius,
+		RiskClass:             spec.RiskLow,
+		Dimensions:            make([]ImpactDimension, 0),
+		BlastRadius:           action.BlastRadius,
 		RequiresHumanApproval: false,
-		ApprovalReasons:      make([]string, 0),
+		ApprovalReasons:       make([]string, 0),
 	}
 
 	switch action.ActionType {

@@ -203,7 +203,7 @@ func (spi *StaticProjectInspector) extractFirstStringLiteral(call *ast.CallExpr)
 	for _, arg := range call.Args {
 		if lit, ok := arg.(*ast.BasicLit); ok && lit.Kind == token.STRING {
 			// strip surrounding quotes
-			return strings.Trim(lit.Value, `"'` + "`")
+			return strings.Trim(lit.Value, `"'`+"`")
 		}
 	}
 	return ""

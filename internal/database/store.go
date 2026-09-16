@@ -135,16 +135,16 @@ type Store interface {
 
 // MemoryStore provides a thread-safe, tenant-isolated in-memory store.
 type MemoryStore struct {
-	mu           sync.RWMutex
-	agents       map[string]*AgentRecord                 // tenantID:agentID -> record
-	policies     map[string]*policy.Policy               // tenantID:policyID -> policy
-	credentials  map[string]*identity.Credential         // hashedKey -> cred
-	tools        map[string]*ToolRecord                  // tenantID:toolID -> tool
-	graphs       map[string]*graph.AgentGraph            // tenantID:graphID -> graph
-	toolPassports map[string]*mcp.ToolPassport           // tenantID:toolID -> passport
-	a2aProfiles  map[string]*a2a.A2ACompatibilityProfile // tenantID:profileID -> profile
-	routeOutcomes []*routing.RouteOutcome
-	evalSuites   map[string]*evaluation.EvaluationSuite // tenantID:suiteID -> suite
+	mu                  sync.RWMutex
+	agents              map[string]*AgentRecord                 // tenantID:agentID -> record
+	policies            map[string]*policy.Policy               // tenantID:policyID -> policy
+	credentials         map[string]*identity.Credential         // hashedKey -> cred
+	tools               map[string]*ToolRecord                  // tenantID:toolID -> tool
+	graphs              map[string]*graph.AgentGraph            // tenantID:graphID -> graph
+	toolPassports       map[string]*mcp.ToolPassport            // tenantID:toolID -> passport
+	a2aProfiles         map[string]*a2a.A2ACompatibilityProfile // tenantID:profileID -> profile
+	routeOutcomes       []*routing.RouteOutcome
+	evalSuites          map[string]*evaluation.EvaluationSuite // tenantID:suiteID -> suite
 	routeOutcomesV3     []*routing.CanonicalRoutingOutcome
 	fingerprints        map[string]*task.TaskFingerprint           // tenantID:fingerprintID -> fp
 	reliabilityProfiles map[string]*reliability.ReliabilityProfile // tenantID:agentID:cap -> profile
@@ -154,10 +154,10 @@ type MemoryStore struct {
 	optimizationActions map[string]*spec.AgentOptimizationAction   // tenantID:actionID -> action
 	routingSpecs        map[string]*spec.AgentRoutingSpec          // tenantID:capabilityID -> spec
 	productionOutcomes  []*outcome.AgentProductionOutcome
-	automationPolicies  map[string]*policy.AutomationPolicy        // tenantID:projectID -> policy
-	Approvals    *approval.Service
-	Canaries     *canary.Manager
-	Audit        *audit.Logger
+	automationPolicies  map[string]*policy.AutomationPolicy // tenantID:projectID -> policy
+	Approvals           *approval.Service
+	Canaries            *canary.Manager
+	Audit               *audit.Logger
 }
 
 // NewMemoryStore constructs a ready in-memory datastore.
@@ -764,4 +764,3 @@ func (m *MemoryStore) GetAutomationPolicy(ctx context.Context, tenantID, project
 	}
 	return pol, nil
 }
-

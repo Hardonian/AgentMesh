@@ -33,8 +33,8 @@ const (
 )
 
 var (
-	ErrUnauthenticated = errors.New("authentication required: missing or invalid bearer token or API key")
-	ErrTenantMismatch  = errors.New("forbidden: caller credentials do not have access to requested tenant")
+	ErrUnauthenticated  = errors.New("authentication required: missing or invalid bearer token or API key")
+	ErrTenantMismatch   = errors.New("forbidden: caller credentials do not have access to requested tenant")
 	ErrInsufficientRole = errors.New("forbidden: caller lacks required permission scope")
 )
 

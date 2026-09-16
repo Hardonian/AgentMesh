@@ -19,25 +19,25 @@ const (
 
 // CandidateOptimization contains an evaluated improvement opportunity.
 type CandidateOptimization struct {
-	RecommendationID string                       `json:"recommendationId"`
-	CapabilityID     string                       `json:"capabilityId"`
-	CurrentAgentID   string                       `json:"currentAgentId"`
-	CandidateAgentID string                       `json:"candidateAgentId"`
-	Status           RecommendationStatus         `json:"status"`
-	Reason           string                       `json:"reason"`
-	CostDeltaPercent float64                      `json:"costDeltaPercent"`
-	LatencyDeltaMs   int64                        `json:"latencyDeltaMs"`
+	RecommendationID string                        `json:"recommendationId"`
+	CapabilityID     string                        `json:"capabilityId"`
+	CurrentAgentID   string                        `json:"currentAgentId"`
+	CandidateAgentID string                        `json:"candidateAgentId"`
+	Status           RecommendationStatus          `json:"status"`
+	Reason           string                        `json:"reason"`
+	CostDeltaPercent float64                       `json:"costDeltaPercent"`
+	LatencyDeltaMs   int64                         `json:"latencyDeltaMs"`
 	ActionProposal   *spec.AgentOptimizationAction `json:"actionProposal,omitempty"`
-	EvaluatedAt      time.Time                    `json:"evaluatedAt"`
+	EvaluatedAt      time.Time                     `json:"evaluatedAt"`
 }
 
 // Scheduler evaluates continuous optimization opportunities without executing them directly.
 type Scheduler struct {
-	mu                     sync.RWMutex
-	minCostImprovementPct  float64
+	mu                      sync.RWMutex
+	minCostImprovementPct   float64
 	minLatencyImprovementMs int64
-	cooldownDuration       time.Duration
-	lastMutatedAt          map[string]time.Time // CapabilityID -> Timestamp
+	cooldownDuration        time.Duration
+	lastMutatedAt           map[string]time.Time // CapabilityID -> Timestamp
 }
 
 // NewScheduler creates an optimization scheduler.

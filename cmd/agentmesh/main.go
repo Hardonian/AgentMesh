@@ -578,10 +578,10 @@ func routeCmd() *cobra.Command {
 			var specs []any
 			_ = json.NewDecoder(resp.Body).Decode(&specs)
 			out, _ := json.MarshalIndent(map[string]any{
-				"capability": args[0],
-				"activeRoute": map[string]int{"agent-primary": 100},
-				"proposedRoute": map[string]int{"agent-candidate": 25, "agent-primary": 75},
-				"risk": "LOW",
+				"capability":          args[0],
+				"activeRoute":         map[string]int{"agent-primary": 100},
+				"proposedRoute":       map[string]int{"agent-candidate": 25, "agent-primary": 75},
+				"risk":                "LOW",
 				"estimatedSavingsPct": 15.4,
 			}, "", "  ")
 			fmt.Println(string(out))
@@ -650,8 +650,8 @@ func a2aCmd() *cobra.Command {
 				Status:          a2a.StatusCompatible,
 				TesterVersion:   "agentmesh-lab-v2.0",
 				Results: map[string]a2a.TestCaseResult{
-					"discovery": {Name: "discovery", Passed: true},
-					"streaming": {Name: "streaming", Passed: true},
+					"discovery":    {Name: "discovery", Passed: true},
+					"streaming":    {Name: "streaming", Passed: true},
 					"cancellation": {Name: "cancellation", Passed: true},
 				},
 			})

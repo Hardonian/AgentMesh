@@ -30,17 +30,17 @@ const (
 
 // CandidateAgent represents an agent evaluated during route ranking.
 type CandidateAgent struct {
-	AgentID            string                         `json:"agentId"`
-	Version            string                         `json:"version"`
-	EndpointURL        string                         `json:"endpointUrl"`
-	HealthStatus       string                         `json:"healthStatus"` // HEALTHY, DEGRADED, UNHEALTHY
-	SupportedTools     []string                       `json:"supportedTools"`
-	Region             string                         `json:"region"`
-	AllowedDataClasses []string                       `json:"allowedDataClasses"`
-	EvidenceTier       routing.CapabilityEvidenceTier `json:"evidenceTier"`
-	QualityScore       float64                        `json:"qualityScore"`
+	AgentID            string                          `json:"agentId"`
+	Version            string                          `json:"version"`
+	EndpointURL        string                          `json:"endpointUrl"`
+	HealthStatus       string                          `json:"healthStatus"` // HEALTHY, DEGRADED, UNHEALTHY
+	SupportedTools     []string                        `json:"supportedTools"`
+	Region             string                          `json:"region"`
+	AllowedDataClasses []string                        `json:"allowedDataClasses"`
+	EvidenceTier       routing.CapabilityEvidenceTier  `json:"evidenceTier"`
+	QualityScore       float64                         `json:"qualityScore"`
 	ReliabilityProfile *reliability.ReliabilityProfile `json:"reliabilityProfile,omitempty"`
-	SLO                *slo.AgentSLO                  `json:"slo,omitempty"`
+	SLO                *slo.AgentSLO                   `json:"slo,omitempty"`
 }
 
 // ScoredCandidate contains component score breakdown for explainability.
@@ -62,19 +62,19 @@ type ScoredCandidate struct {
 
 // RouteResult contains the final routing choice, confidence, and full explanation.
 type RouteResult struct {
-	SelectedAgentID        string             `json:"selectedAgentId"`
-	SelectedVersion        string             `json:"selectedVersion"`
-	EndpointURL            string             `json:"endpointUrl"`
-	Objective              RoutingObjective   `json:"objective"`
-	AlgorithmID            string             `json:"algorithmId"`
-	AlgorithmVersion       string             `json:"algorithmVersion"`
-	PolicyVersion          string             `json:"policyVersion"`
-	Confidence             float64            `json:"confidence"`
-	IsFailover             bool               `json:"isFailover"`
-	FailoverOriginalAgent  string             `json:"failoverOriginalAgent,omitempty"`
-	Candidates             []*ScoredCandidate `json:"candidates"`
-	DecidedAt              time.Time          `json:"decidedAt"`
-	DecisionExplanation    string             `json:"decisionExplanation"`
+	SelectedAgentID       string             `json:"selectedAgentId"`
+	SelectedVersion       string             `json:"selectedVersion"`
+	EndpointURL           string             `json:"endpointUrl"`
+	Objective             RoutingObjective   `json:"objective"`
+	AlgorithmID           string             `json:"algorithmId"`
+	AlgorithmVersion      string             `json:"algorithmVersion"`
+	PolicyVersion         string             `json:"policyVersion"`
+	Confidence            float64            `json:"confidence"`
+	IsFailover            bool               `json:"isFailover"`
+	FailoverOriginalAgent string             `json:"failoverOriginalAgent,omitempty"`
+	Candidates            []*ScoredCandidate `json:"candidates"`
+	DecidedAt             time.Time          `json:"decidedAt"`
+	DecisionExplanation   string             `json:"decisionExplanation"`
 }
 
 // BaselineRouterV1 implements deterministic 9-step routing intelligence.

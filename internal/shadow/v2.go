@@ -35,22 +35,22 @@ var ForbiddenShadowTools = map[string]bool{
 
 // ShadowInvocationReport captures comparative telemetry from a shadow run.
 type ShadowInvocationReport struct {
-	ReportID             string         `json:"reportId"`
-	TaskID               string         `json:"taskId"`
-	CapabilityID         string         `json:"capabilityId"`
-	Mode                 ExecutionMode  `json:"mode"`
-	BaselineAgentID      string         `json:"baselineAgentId"`
-	CandidateAgentID     string         `json:"candidateAgentId"`
-	BaselineLatencyMs    int64          `json:"baselineLatencyMs"`
-	CandidateLatencyMs   int64          `json:"candidateLatencyMs"`
-	BaselineCostUSD      float64        `json:"baselineCostUsd"`
-	CandidateCostUSD     float64        `json:"candidateCostUsd"`
-	BaselineToolCalls    []string       `json:"baselineToolCalls"`
-	CandidateToolCalls   []string       `json:"candidateToolCalls"`
-	SuppressedToolCalls  []string       `json:"suppressedToolCalls"`
-	SideEffectsContained bool           `json:"sideEffectsContained"`
-	OutputsEquivalent    bool           `json:"outputsEquivalent"`
-	CreatedAt            time.Time      `json:"createdAt"`
+	ReportID             string        `json:"reportId"`
+	TaskID               string        `json:"taskId"`
+	CapabilityID         string        `json:"capabilityId"`
+	Mode                 ExecutionMode `json:"mode"`
+	BaselineAgentID      string        `json:"baselineAgentId"`
+	CandidateAgentID     string        `json:"candidateAgentId"`
+	BaselineLatencyMs    int64         `json:"baselineLatencyMs"`
+	CandidateLatencyMs   int64         `json:"candidateLatencyMs"`
+	BaselineCostUSD      float64       `json:"baselineCostUsd"`
+	CandidateCostUSD     float64       `json:"candidateCostUsd"`
+	BaselineToolCalls    []string      `json:"baselineToolCalls"`
+	CandidateToolCalls   []string      `json:"candidateToolCalls"`
+	SuppressedToolCalls  []string      `json:"suppressedToolCalls"`
+	SideEffectsContained bool          `json:"sideEffectsContained"`
+	OutputsEquivalent    bool          `json:"outputsEquivalent"`
+	CreatedAt            time.Time     `json:"createdAt"`
 }
 
 // Manager coordinates safe shadow runs.

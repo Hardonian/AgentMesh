@@ -43,39 +43,39 @@ type CanaryStageConfig struct {
 
 // CanaryRunV3 tracks a complete multi-stage progressive delivery run.
 type CanaryRunV3 struct {
-	ID                 string              `json:"id"`
-	OrganizationID     string              `json:"organizationId"`
-	ProjectID          string              `json:"projectId"`
-	CapabilityID       string              `json:"capabilityId"`
-	TargetType         CanaryTargetType    `json:"targetType"`
-	BaselineTarget     string              `json:"baselineTarget"`
-	CandidateTarget    string              `json:"candidateTarget"`
-	Stages             []CanaryStageConfig `json:"stages"`
-	CurrentStageIndex  int                 `json:"currentStageIndex"`
-	State              RevisionState       `json:"state"` // CANARY, ACTIVE, ROLLED_BACK
-	StageStartedAt     time.Time           `json:"stageStartedAt"`
-	BaselineMetrics    MetricSnapshotV3    `json:"baselineMetrics"`
-	CandidateMetrics   MetricSnapshotV3    `json:"candidateMetrics"`
-	RollbackTrigger    string              `json:"rollbackTrigger,omitempty"`
-	CreatedAt          time.Time           `json:"createdAt"`
-	UpdatedAt          time.Time           `json:"updatedAt"`
+	ID                string              `json:"id"`
+	OrganizationID    string              `json:"organizationId"`
+	ProjectID         string              `json:"projectId"`
+	CapabilityID      string              `json:"capabilityId"`
+	TargetType        CanaryTargetType    `json:"targetType"`
+	BaselineTarget    string              `json:"baselineTarget"`
+	CandidateTarget   string              `json:"candidateTarget"`
+	Stages            []CanaryStageConfig `json:"stages"`
+	CurrentStageIndex int                 `json:"currentStageIndex"`
+	State             RevisionState       `json:"state"` // CANARY, ACTIVE, ROLLED_BACK
+	StageStartedAt    time.Time           `json:"stageStartedAt"`
+	BaselineMetrics   MetricSnapshotV3    `json:"baselineMetrics"`
+	CandidateMetrics  MetricSnapshotV3    `json:"candidateMetrics"`
+	RollbackTrigger   string              `json:"rollbackTrigger,omitempty"`
+	CreatedAt         time.Time           `json:"createdAt"`
+	UpdatedAt         time.Time           `json:"updatedAt"`
 }
 
 // MetricSnapshotV3 records operational metrics for Canary V3.
 type MetricSnapshotV3 struct {
-	TotalRequests      int64   `json:"totalRequests"`
-	SuccessCount       int64   `json:"successCount"`
-	SuccessRate        float64 `json:"successRate"`
-	ErrorCount         int64   `json:"errorCount"`
-	ErrorRate          float64 `json:"errorRate"`
-	P50LatencyMs       int64   `json:"p50LatencyMs"`
-	P95LatencyMs       int64   `json:"p95LatencyMs"`
-	AverageCostUSD     float64 `json:"averageCostUsd"`
-	QualityScore       float64 `json:"qualityScore"`
-	ToolSuccessRate    float64 `json:"toolSuccessRate"`
-	PolicyViolations   int     `json:"policyViolations"`
-	FallbackCount      int64   `json:"fallbackCount"`
-	FallbackRate       float64 `json:"fallbackRate"`
+	TotalRequests    int64   `json:"totalRequests"`
+	SuccessCount     int64   `json:"successCount"`
+	SuccessRate      float64 `json:"successRate"`
+	ErrorCount       int64   `json:"errorCount"`
+	ErrorRate        float64 `json:"errorRate"`
+	P50LatencyMs     int64   `json:"p50LatencyMs"`
+	P95LatencyMs     int64   `json:"p95LatencyMs"`
+	AverageCostUSD   float64 `json:"averageCostUsd"`
+	QualityScore     float64 `json:"qualityScore"`
+	ToolSuccessRate  float64 `json:"toolSuccessRate"`
+	PolicyViolations int     `json:"policyViolations"`
+	FallbackCount    int64   `json:"fallbackCount"`
+	FallbackRate     float64 `json:"fallbackRate"`
 }
 
 // EngineV3 manages multi-target progressive delivery and evaluation.

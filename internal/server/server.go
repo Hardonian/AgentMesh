@@ -1386,6 +1386,3 @@ func (s *Server) handleBigQueryExport(w http.ResponseWriter, r *http.Request) {
 
 	jsonResponse(w, http.StatusOK, batch)
 }
-
-
-

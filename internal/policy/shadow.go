@@ -10,20 +10,20 @@ import (
 
 // PolicyCanary governs side-by-side execution between baseline and candidate policy versions.
 type PolicyCanary struct {
-	ID                 string    `json:"id"`
-	TenantID           string    `json:"tenantId"`
-	BaselinePolicy     *Policy   `json:"baselinePolicy"`
-	CandidatePolicy    *Policy   `json:"candidatePolicy"`
-	LastKnownGood      *Policy   `json:"lastKnownGood"`
-	ShadowMode         bool      `json:"shadowMode"` // Always true during evaluation
-	EvaluatedTraffic   int64     `json:"evaluatedTraffic"`
-	WouldAllowCount    int64     `json:"wouldAllowCount"`
-	WouldDenyCount     int64     `json:"wouldDenyCount"`
-	WouldApproveCount  int64     `json:"wouldApproveCount"`
-	DiscrepancyCount   int64     `json:"discrepancyCount"`
-	CreatedAt          time.Time `json:"createdAt"`
-	PromotedAt         *time.Time `json:"promotedAt,omitempty"`
-	RolledBackAt       *time.Time `json:"rolledBackAt,omitempty"`
+	ID                string     `json:"id"`
+	TenantID          string     `json:"tenantId"`
+	BaselinePolicy    *Policy    `json:"baselinePolicy"`
+	CandidatePolicy   *Policy    `json:"candidatePolicy"`
+	LastKnownGood     *Policy    `json:"lastKnownGood"`
+	ShadowMode        bool       `json:"shadowMode"` // Always true during evaluation
+	EvaluatedTraffic  int64      `json:"evaluatedTraffic"`
+	WouldAllowCount   int64      `json:"wouldAllowCount"`
+	WouldDenyCount    int64      `json:"wouldDenyCount"`
+	WouldApproveCount int64      `json:"wouldApproveCount"`
+	DiscrepancyCount  int64      `json:"discrepancyCount"`
+	CreatedAt         time.Time  `json:"createdAt"`
+	PromotedAt        *time.Time `json:"promotedAt,omitempty"`
+	RolledBackAt      *time.Time `json:"rolledBackAt,omitempty"`
 }
 
 // ShadowEvaluator coordinates live shadow evaluation without disrupting production traffic.

@@ -19,40 +19,40 @@ const (
 
 // ProductionWindowSnapshot captures performance within a specific observation window.
 type ProductionWindowSnapshot struct {
-	StartTime          time.Time `json:"startTime"`
-	EndTime            time.Time `json:"endTime"`
-	TotalRequests      int64     `json:"totalRequests"`
-	SuccessRate        float64   `json:"successRate"`
-	P95LatencyMs       int64     `json:"p95LatencyMs"`
-	CostPerTaskUSD     float64   `json:"costPerTaskUsd"`
-	QualityScore       float64   `json:"qualityScore"`
-	ToolErrorRate      float64   `json:"toolErrorRate"`
-	FallbackRate       float64   `json:"fallbackRate"`
-	HumanEscalations   int       `json:"humanEscalations"`
+	StartTime        time.Time `json:"startTime"`
+	EndTime          time.Time `json:"endTime"`
+	TotalRequests    int64     `json:"totalRequests"`
+	SuccessRate      float64   `json:"successRate"`
+	P95LatencyMs     int64     `json:"p95LatencyMs"`
+	CostPerTaskUSD   float64   `json:"costPerTaskUsd"`
+	QualityScore     float64   `json:"qualityScore"`
+	ToolErrorRate    float64   `json:"toolErrorRate"`
+	FallbackRate     float64   `json:"fallbackRate"`
+	HumanEscalations int       `json:"humanEscalations"`
 }
 
 // AgentProductionOutcome records the empirical before-and-after impact of an optimization action.
 type AgentProductionOutcome struct {
-	OutcomeID              string                   `json:"outcomeId"`
-	ActionID               string                   `json:"actionId"`
-	OrganizationID         string                   `json:"organizationId"`
-	ProjectID              string                   `json:"projectId"`
-	CapabilityID           string                   `json:"capabilityId"`
-	TargetType             string                   `json:"targetType"`
-	TargetID               string                   `json:"targetId"`
-	Status                 ImprovementStatus        `json:"status"` // PROJECTED vs VERIFIED
-	BeforeWindow           ProductionWindowSnapshot `json:"beforeWindow"`
-	AfterWindow            ProductionWindowSnapshot `json:"afterWindow"`
-	WorkloadNormalized     bool                     `json:"workloadNormalized"`
-	SuccessRateDelta       float64                  `json:"successRateDelta"`       // positive = improved
-	LatencyDeltaMs         int64                    `json:"latencyDeltaMs"`         // negative = faster
-	CostDeltaUSD           float64                  `json:"costDeltaUsd"`           // negative = cheaper
-	QualityDelta           float64                  `json:"qualityDelta"`           // positive = better quality
-	FallbackDelta          float64                  `json:"fallbackDelta"`
-	ToolErrorDelta         float64                  `json:"toolErrorDelta"`
-	HumanEscalationDelta   int                      `json:"humanEscalationDelta"`
-	VerifiedAt             *time.Time               `json:"verifiedAt,omitempty"`
-	CreatedAt              time.Time                `json:"createdAt"`
+	OutcomeID            string                   `json:"outcomeId"`
+	ActionID             string                   `json:"actionId"`
+	OrganizationID       string                   `json:"organizationId"`
+	ProjectID            string                   `json:"projectId"`
+	CapabilityID         string                   `json:"capabilityId"`
+	TargetType           string                   `json:"targetType"`
+	TargetID             string                   `json:"targetId"`
+	Status               ImprovementStatus        `json:"status"` // PROJECTED vs VERIFIED
+	BeforeWindow         ProductionWindowSnapshot `json:"beforeWindow"`
+	AfterWindow          ProductionWindowSnapshot `json:"afterWindow"`
+	WorkloadNormalized   bool                     `json:"workloadNormalized"`
+	SuccessRateDelta     float64                  `json:"successRateDelta"` // positive = improved
+	LatencyDeltaMs       int64                    `json:"latencyDeltaMs"`   // negative = faster
+	CostDeltaUSD         float64                  `json:"costDeltaUsd"`     // negative = cheaper
+	QualityDelta         float64                  `json:"qualityDelta"`     // positive = better quality
+	FallbackDelta        float64                  `json:"fallbackDelta"`
+	ToolErrorDelta       float64                  `json:"toolErrorDelta"`
+	HumanEscalationDelta int                      `json:"humanEscalationDelta"`
+	VerifiedAt           *time.Time               `json:"verifiedAt,omitempty"`
+	CreatedAt            time.Time                `json:"createdAt"`
 }
 
 // ComputeVerifiedOutcome calculates the exact delta between before and after windows and verifies improvement.

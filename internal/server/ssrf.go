@@ -9,18 +9,18 @@ import (
 )
 
 var (
-	ErrInvalidScheme   = errors.New("invalid URL scheme: only http and https are permitted")
-	ErrSSRFBlocked     = errors.New("destination address is blocked by SSRF protection policy")
-	ErrHostResolution  = errors.New("failed to resolve target hostname")
+	ErrInvalidScheme  = errors.New("invalid URL scheme: only http and https are permitted")
+	ErrSSRFBlocked    = errors.New("destination address is blocked by SSRF protection policy")
+	ErrHostResolution = errors.New("failed to resolve target hostname")
 )
 
 // BlockedMetadataHosts lists cloud metadata hostnames that must always be blocked.
 var BlockedMetadataHosts = map[string]bool{
-	"metadata.google.internal":   true,
-	"169.254.169.254":            true,
-	"instance-data":              true,
-	"metadata.internal":          true,
-	"metadata":                   true,
+	"metadata.google.internal": true,
+	"169.254.169.254":          true,
+	"instance-data":            true,
+	"metadata.internal":        true,
+	"metadata":                 true,
 }
 
 // ValidateSafeRemoteURL checks that a user-supplied URL is safe from SSRF attacks.
