@@ -190,7 +190,7 @@ func TestPhase2_MCPSchemaDriftAndFingerprint(t *testing.T) {
 	schemaV3 := map[string]any{
 		"type": "object",
 		"properties": map[string]any{
-			"query":     map[string]any{"type": "string"},
+			"query":      map[string]any{"type": "string"},
 			"auth_token": map[string]any{"type": "string"},
 		},
 		"required": []string{"query", "auth_token"},
@@ -341,15 +341,15 @@ func TestPhase2_PolicyShadowCanary(t *testing.T) {
 // 7. Security-Sensitive Change Impact Analysis
 func TestPhase2_AgentChangeImpactSecuritySensitive(t *testing.T) {
 	current := &contracts.AgentContract{
-		Metadata: contracts.Metadata{Name: "payment-agent", Version: "1.0.0"},
-		Tools:    contracts.ToolsConfig{Allow: []string{"bigquery.read"}},
+		Metadata:   contracts.Metadata{Name: "payment-agent", Version: "1.0.0"},
+		Tools:      contracts.ToolsConfig{Allow: []string{"bigquery.read"}},
 		Delegation: contracts.DelegationConfig{MaxDepth: 2},
 	}
 
 	// Candidate introduces destructive tool and increases delegation depth
 	candidate := &contracts.AgentContract{
-		Metadata: contracts.Metadata{Name: "payment-agent", Version: "1.1.0"},
-		Tools:    contracts.ToolsConfig{Allow: []string{"bigquery.read", "payment.execute", "gke.cluster.delete"}},
+		Metadata:   contracts.Metadata{Name: "payment-agent", Version: "1.1.0"},
+		Tools:      contracts.ToolsConfig{Allow: []string{"bigquery.read", "payment.execute", "gke.cluster.delete"}},
 		Delegation: contracts.DelegationConfig{MaxDepth: 5},
 	}
 

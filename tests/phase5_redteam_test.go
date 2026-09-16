@@ -422,9 +422,9 @@ func TestP0RedTeamScenarios(t *testing.T) {
 		router := routing.NewRouter(nil)
 		for i := 1; i <= 10; i++ {
 			router.RegisterCandidate(&routing.AgentRouteCandidate{
-				AgentID:      fmt.Sprintf("agent-%d", i),
-				EndpointURL:  fmt.Sprintf("http://agent-%d.mesh.internal", i),
-				Status:       "HEALTHY",
+				AgentID:     fmt.Sprintf("agent-%d", i),
+				EndpointURL: fmt.Sprintf("http://agent-%d.mesh.internal", i),
+				Status:      "HEALTHY",
 				Contract: &contracts.AgentContract{
 					Capabilities: []string{"text_generation"},
 				},

@@ -32,8 +32,8 @@ func TestAll10_1_VSCodeExtensionManifest(t *testing.T) {
 	}
 
 	var pkg struct {
-		Name       string `json:"name"`
-		Version    string `json:"version"`
+		Name        string `json:"name"`
+		Version     string `json:"version"`
 		Contributes struct {
 			Commands []struct {
 				Command string `json:"command"`
